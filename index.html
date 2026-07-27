@@ -71,9 +71,37 @@
         .video-glow {
             box-shadow: 0 0 35px -5px rgba(212, 175, 55, 0.35);
         }
+
+        /* Social Proof Notification Animations */
+        @keyframes slideInProof {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes slideOutProof {
+            from { transform: translateY(0); opacity: 1; }
+            to { transform: translateY(20px); opacity: 0; }
+        }
+        .proof-toast {
+            animation: slideInProof 0.4s ease-out forwards;
+        }
+        .proof-toast.proof-toast-leaving {
+            animation: slideOutProof 0.4s ease-in forwards;
+        }
+        .proof-pulse-dot {
+            box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.6);
+            animation: proofPulse 2s infinite;
+        }
+        @keyframes proofPulse {
+            0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.6); }
+            70% { box-shadow: 0 0 0 6px rgba(212, 175, 55, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+        }
     </style>
 </head>
 <body class="bg-nude-50 text-charcoal font-sans antialiased selection:bg-gold-500 selection:text-white">
+
+    <!-- Social Proof Notifications Container -->
+    <div id="social-proof-container" class="fixed bottom-3 left-3 right-3 sm:right-auto z-40 flex flex-col gap-2 sm:max-w-[320px] pointer-events-none"></div>
 
     <!-- Top Announcement Bar -->
     <div class="bg-charcoal text-nude-100 py-2.5 px-4 text-center text-xs md:text-sm font-medium border-b border-gold-500/20 flex items-center justify-center gap-2">
@@ -1377,6 +1405,159 @@
             player.src = '';
             document.getElementById('videoModal').classList.add('hidden');
         }
+
+        // ==========================================================
+        // MOTOR DE NOTIFICAÇÕES DE PROVA SOCIAL (cidades brasileiras)
+        // Dois tipos de evento:
+        //  - Mentoria Presencial: só cidades próximas de Cuiabá/MT
+        //  - Cursos (Apostilas/Online): capitais e cidades de todo o Brasil,
+        //    com foco perto de Recife, São Paulo, Bahia e Belém
+        // ==========================================================
+
+        // Cidades próximas de Cuiabá/MT (só para a Mentoria Presencial)
+        const mentoriaCities = [
+            "Cuiabá", "Várzea Grande", "Chapada dos Guimarães", "Rondonópolis",
+            "Nova Xavantina", "Poconé", "Santo Antônio de Leverger", "Nobres",
+            "Sinop", "Cáceres", "Barra do Garças", "Primavera do Leste",
+            "Jangada", "Acorizal", "Nossa Senhora do Livramento"
+        ];
+
+        // Cidades de todo o Brasil (para Apostilas / Curso Online),
+        // com foco perto de Recife, São Paulo, Bahia e Belém, e outras capitais
+        const cursoCities = [
+            // Perto de Recife (PE)
+            { city: "Recife", uf: "PE" }, { city: "Olinda", uf: "PE" },
+            { city: "Jaboatão dos Guararapes", uf: "PE" }, { city: "Caruaru", uf: "PE" },
+            { city: "Paulista", uf: "PE" },
+            // Perto de São Paulo (SP)
+            { city: "São Paulo", uf: "SP" }, { city: "Campinas", uf: "SP" },
+            { city: "Guarulhos", uf: "SP" }, { city: "Santo André", uf: "SP" },
+            { city: "Osasco", uf: "SP" }, { city: "Sorocaba", uf: "SP" },
+            // Bahia
+            { city: "Salvador", uf: "BA" }, { city: "Feira de Santana", uf: "BA" },
+            { city: "Vitória da Conquista", uf: "BA" }, { city: "Ilhéus", uf: "BA" },
+            { city: "Camaçari", uf: "BA" },
+            // Perto de Belém (PA)
+            { city: "Belém", uf: "PA" }, { city: "Ananindeua", uf: "PA" },
+            { city: "Marituba", uf: "PA" }, { city: "Castanhal", uf: "PA" },
+            // Outras capitais
+            { city: "Rio de Janeiro", uf: "RJ" }, { city: "Brasília", uf: "DF" },
+            { city: "Fortaleza", uf: "CE" }, { city: "Curitiba", uf: "PR" },
+            { city: "Porto Alegre", uf: "RS" }, { city: "Belo Horizonte", uf: "MG" },
+            { city: "Manaus", uf: "AM" }, { city: "Goiânia", uf: "GO" },
+            { city: "Florianópolis", uf: "SC" }, { city: "Natal", uf: "RN" },
+            { city: "João Pessoa", uf: "PB" }, { city: "Maceió", uf: "AL" },
+            { city: "Vitória", uf: "ES" }, { city: "Teresina", uf: "PI" },
+            { city: "Aracaju", uf: "SE" }, { city: "Campo Grande", uf: "MS" }
+        ];
+
+        function randomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function buildProofMessage(minCount, maxCount) {
+            const count = randomInt(minCount, maxCount);
+            // ~35% das notificações são de inscrição na Mentoria Presencial
+            // (só cidades perto de Cuiabá); o restante é compra de Apostilas/Curso Online
+            const isMentoria = Math.random() < 0.35;
+
+            if (isMentoria) {
+                const city = mentoriaCities[Math.floor(Math.random() * mentoriaCities.length)];
+                const text = count === 1
+                    ? `<strong>1 pessoa</strong> de ${city}, MT acaba de se inscrever na <strong>Mentoria Presencial</strong>`
+                    : `<strong>${count} pessoas</strong> de ${city}, MT acabaram de se inscrever na <strong>Mentoria Presencial</strong>`;
+                return { text, timeAgo: "agora mesmo" };
+            } else {
+                const place = cursoCities[Math.floor(Math.random() * cursoCities.length)];
+                const text = count === 1
+                    ? `<strong>1 pessoa</strong> de ${place.city}, ${place.uf} acaba de comprar o <strong>Curso Online</strong>`
+                    : `<strong>${count} pessoas</strong> de ${place.city}, ${place.uf} acabaram de comprar o <strong>Curso Online</strong>`;
+                return { text, timeAgo: "agora mesmo" };
+            }
+        }
+
+        function showProofNotification(minCount, maxCount) {
+            const container = document.getElementById('social-proof-container');
+            if (!container) return;
+
+            const { text, timeAgo } = buildProofMessage(minCount, maxCount);
+
+            const toast = document.createElement('div');
+            toast.className = 'proof-toast dark-glass rounded-xl p-3 flex items-center gap-3 shadow-xl border border-gold-500/30 pointer-events-auto';
+            toast.innerHTML = `
+                <span class="relative flex h-2.5 w-2.5 flex-shrink-0">
+                    <span class="proof-pulse-dot absolute inline-flex h-full w-full rounded-full bg-gold-400"></span>
+                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-gold-400"></span>
+                </span>
+                <div class="flex-1 leading-snug">
+                    <p class="text-[11.5px] text-nude-100">${text}</p>
+                    <p class="text-[10px] text-gold-300/90 font-semibold mt-0.5">${timeAgo}</p>
+                </div>
+            `;
+
+            container.appendChild(toast);
+
+            // Mantém no máximo 3 notificações visíveis ao mesmo tempo
+            while (container.children.length > 3) {
+                container.removeChild(container.firstChild);
+            }
+
+            // Remove essa notificação após alguns segundos
+            setTimeout(() => {
+                toast.classList.add('proof-toast-leaving');
+                setTimeout(() => toast.remove(), 400);
+            }, 5000);
+        }
+
+        // Três "ondas" de notificação, cada uma com seu intervalo e faixa de
+        // pessoas — em determinados momentos (modo pausa), os tempos se
+        // invertem entre si (+2 segundos) e a quantidade de pessoas cai
+        // para apenas 1 a 2, simulando uma "pausa" natural. Além disso, a
+        // cada disparo é somada uma pequena pausa extra aleatória.
+        let quietMode = false;
+
+        function toggleQuietMode() {
+            quietMode = !quietMode;
+            setTimeout(toggleQuietMode, quietMode ? 20000 : 45000);
+        }
+        setTimeout(toggleQuietMode, 45000);
+
+        const EXTRA_PAUSES_SEC = [3, 9, 2, 7, 4, 10, 5, 8];
+        function randomExtraPauseMs() {
+            const seconds = EXTRA_PAUSES_SEC[Math.floor(Math.random() * EXTRA_PAUSES_SEC.length)];
+            return seconds * 1000;
+        }
+
+        // Onda A: normalmente 6s / 1-9 pessoas. No modo pausa, vira 28+2=30s / 1-2 pessoas.
+        function scheduleWaveA() {
+            const base = quietMode ? 28000 + 2000 : 6000;
+            const interval = base + randomExtraPauseMs();
+            const range = quietMode ? [1, 2] : [1, 9];
+            showProofNotification(range[0], range[1]);
+            setTimeout(scheduleWaveA, interval);
+        }
+
+        // Onda B: normalmente 15s / 3-7 pessoas. No modo pausa, vira 15+2=17s / 1-2 pessoas.
+        function scheduleWaveB() {
+            const base = quietMode ? 15000 + 2000 : 15000;
+            const interval = base + randomExtraPauseMs();
+            const range = quietMode ? [1, 2] : [3, 7];
+            showProofNotification(range[0], range[1]);
+            setTimeout(scheduleWaveB, interval);
+        }
+
+        // Onda C: normalmente 28s / 2-8 pessoas. No modo pausa, vira 6+2=8s / 1-2 pessoas.
+        function scheduleWaveC() {
+            const base = quietMode ? 6000 + 2000 : 28000;
+            const interval = base + randomExtraPauseMs();
+            const range = quietMode ? [1, 2] : [2, 8];
+            showProofNotification(range[0], range[1]);
+            setTimeout(scheduleWaveC, interval);
+        }
+
+        setTimeout(scheduleWaveA, 2000);
+        setTimeout(scheduleWaveB, 5000);
+        setTimeout(scheduleWaveC, 9000);
     </script>
 </body>
 </html>
