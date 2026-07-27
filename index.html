@@ -1455,11 +1455,12 @@
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
-        function buildProofMessage(minCount, maxCount) {
+        function buildProofMessage(minCount, maxCount, forceType) {
             const count = randomInt(minCount, maxCount);
             // ~35% das notificações são de inscrição na Mentoria Presencial
-            // (só cidades perto de Cuiabá); o restante é compra de Apostilas/Curso Online
-            const isMentoria = Math.random() < 0.35;
+            // (só cidades perto de Cuiabá); o restante é compra de Apostilas/Curso Online.
+            // forceType ('mentoria' ou 'curso') ignora esse sorteio quando informado.
+            const isMentoria = forceType ? (forceType === 'mentoria') : (Math.random() < 0.35);
 
             if (isMentoria) {
                 const city = mentoriaCities[Math.floor(Math.random() * mentoriaCities.length)];
@@ -1476,11 +1477,11 @@
             }
         }
 
-        function showProofNotification(minCount, maxCount) {
+        function showProofNotification(minCount, maxCount, forceType) {
             const container = document.getElementById('social-proof-container');
             if (!container) return;
 
-            const { text, timeAgo } = buildProofMessage(minCount, maxCount);
+            const { text, timeAgo } = buildProofMessage(minCount, maxCount, forceType);
 
             const toast = document.createElement('div');
             toast.className = 'proof-toast dark-glass rounded-xl p-3 flex items-center gap-3 shadow-xl border border-gold-500/30 pointer-events-auto';
@@ -1528,8 +1529,24 @@
             return seconds * 1000;
         }
 
+        // ==========================================================
+        // MODO MADRUGADA (00:00 às 06:00, horário real do dispositivo)
+        // Nesse período, as ondas normais pausam e entram em cena duas
+        // ondas dedicadas: Curso Online a cada 3 min (1-3 pessoas) e
+        // Mentoria Presencial a cada 4 min (1-4 pessoas). Depois das 6h,
+        // volta tudo ao funcionamento normal automaticamente.
+        // ==========================================================
+        function isNightMode() {
+            const h = new Date().getHours();
+            return h >= 0 && h < 6;
+        }
+
         // Onda A: normalmente 6s / 1-9 pessoas. No modo pausa, vira 28+2=30s / 1-2 pessoas.
         function scheduleWaveA() {
+            if (isNightMode()) {
+                setTimeout(scheduleWaveA, 30000); // fica em espera até acabar a madrugada
+                return;
+            }
             const base = quietMode ? 28000 + 2000 : 6000;
             const interval = base + randomExtraPauseMs();
             const range = quietMode ? [1, 2] : [1, 9];
@@ -1539,6 +1556,10 @@
 
         // Onda B: normalmente 15s / 3-7 pessoas. No modo pausa, vira 15+2=17s / 1-2 pessoas.
         function scheduleWaveB() {
+            if (isNightMode()) {
+                setTimeout(scheduleWaveB, 30000);
+                return;
+            }
             const base = quietMode ? 15000 + 2000 : 15000;
             const interval = base + randomExtraPauseMs();
             const range = quietMode ? [1, 2] : [3, 7];
@@ -1548,6 +1569,10 @@
 
         // Onda C: normalmente 28s / 2-8 pessoas. No modo pausa, vira 6+2=8s / 1-2 pessoas.
         function scheduleWaveC() {
+            if (isNightMode()) {
+                setTimeout(scheduleWaveC, 30000);
+                return;
+            }
             const base = quietMode ? 6000 + 2000 : 28000;
             const interval = base + randomExtraPauseMs();
             const range = quietMode ? [1, 2] : [2, 8];
@@ -1555,9 +1580,31 @@
             setTimeout(scheduleWaveC, interval);
         }
 
+        // Onda noturna do Curso Online: a cada 3 minutos, 1 a 3 pessoas
+        function scheduleNightCurso() {
+            if (isNightMode()) {
+                showProofNotification(1, 3, 'curso');
+                setTimeout(scheduleNightCurso, 3 * 60 * 1000);
+            } else {
+                setTimeout(scheduleNightCurso, 30000); // aguarda a madrugada começar
+            }
+        }
+
+        // Onda noturna da Mentoria Presencial: a cada 4 minutos, 1 a 4 pessoas
+        function scheduleNightMentoria() {
+            if (isNightMode()) {
+                showProofNotification(1, 4, 'mentoria');
+                setTimeout(scheduleNightMentoria, 4 * 60 * 1000);
+            } else {
+                setTimeout(scheduleNightMentoria, 30000);
+            }
+        }
+
         setTimeout(scheduleWaveA, 2000);
         setTimeout(scheduleWaveB, 5000);
         setTimeout(scheduleWaveC, 9000);
+        setTimeout(scheduleNightCurso, 1000);
+        setTimeout(scheduleNightMentoria, 1000);
     </script>
 </body>
 </html>
