@@ -12,6 +12,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- SDK Mercado Pago (Bricks) para o checkout transparente -->
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
     
     <script>
         tailwind.config = {
@@ -730,20 +732,10 @@
 
                     <div class="pt-6 border-t border-nude-100">
                         <div class="mb-4">
-                            <span class="text-xs text-charcoal/50 line-through">De R$ 179,90</span>
-                            <div class="font-serif text-3xl font-bold text-charcoal">R$ 109<span class="text-sm">,99</span> <span class="text-xs font-sans font-normal text-charcoal/60">à vista</span></div>
+                            <span class="text-xs text-charcoal/50">Coleção completa a partir de <strong class="text-charcoal">R$ 109,99</strong> ou avulsa por <strong class="text-charcoal">R$ 19,90</strong></span>
                         </div>
-                        <button onclick="openCheckoutModal('Coleção Apostilas Digitais', '109.99')" class="w-full py-3.5 rounded-full border-2 border-charcoal text-charcoal hover:bg-charcoal hover:text-white transition-all text-xs font-bold uppercase tracking-wider">
-                            Comprar 9 apostilas PDF
-                        </button>
-                    </div>
-                    <div class="pt-6 border-t border-nude-100"> 
-                        <div class="mb-4">
-                            <span class="text-xs text-charcoal/50 line-through">De R$ 29,90</span>
-                            <div class="font-serif text-3xl font-bold text-charcoal">R$ 19<span class="text-sm">,90</span> <span class="text-xs font-sans font-normal text-charcoal/60">à vista</span></div>
-                        </div>
-                        <button onclick="openCheckoutModal('Coleção Apostilas Digitais', '19.90')" class="w-full py-3.5 rounded-full border-2 border-charcoal text-charcoal hover:bg-charcoal hover:text-white transition-all text-xs font-bold uppercase tracking-wider">
-                            Comprar Unidade avulsa PDF
+                        <button onclick="openApostilaModal()" class="w-full py-3.5 rounded-full border-2 border-charcoal text-charcoal hover:bg-charcoal hover:text-white transition-all text-xs font-bold uppercase tracking-wider">
+                            Comprar Apostilas
                         </button>
                     </div>
                 </div>
@@ -793,7 +785,7 @@
                             <div class="font-serif text-3xl font-bold text-gold-600">12x R$ 49<span class="text-sm">,70</span></div>
                             <span class="text-xs text-charcoal/60">ou R$ 497,00 à vista</span>
                         </div>
-                        <button onclick="openCheckoutModal('Curso Online Master Nail Pro (Com Zoom Semanal)', '497.00')" class="w-full py-3.5 rounded-full gold-gradient-bg text-charcoal hover:opacity-90 transition-all text-xs font-bold uppercase tracking-wider shadow-md">
+                        <button onclick="comprarCursoOnline()" class="w-full py-3.5 rounded-full gold-gradient-bg text-charcoal hover:opacity-90 transition-all text-xs font-bold uppercase tracking-wider shadow-md">
                             Matricular no Curso Online
                         </button>
                     </div>
@@ -1113,32 +1105,138 @@
     </div>
 
     <!-- Modal: Checkout / Informações do Produto -->
+    <!-- Modal: Seleção de Apostilas (avulsa ou coleção completa) + Carrinho -->
+    <div id="apostilaModal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-6 relative border border-gold-300 max-h-[90vh] overflow-y-auto">
+            <button onclick="closeApostilaModal()" class="absolute top-4 right-4 text-charcoal/50 hover:text-charcoal text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="text-center space-y-1">
+                <span class="text-[10px] uppercase tracking-widest font-bold text-gold-600 bg-gold-100 px-2.5 py-1 rounded-full">Apostilas Digitais</span>
+                <h3 class="font-serif text-2xl font-bold text-charcoal">O que você quer levar?</h3>
+            </div>
+
+            <!-- Opção 1: Coleção completa -->
+            <label class="flex items-start gap-3 p-4 rounded-2xl border-2 border-gold-300 bg-gold-50/50 cursor-pointer">
+                <input type="radio" name="tipoApostila" value="colecao" checked onchange="atualizarTipoApostila()" class="mt-1 h-4 w-4 accent-gold-500">
+                <div class="flex-1">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-sm text-charcoal">Coleção completa (9 apostilas)</span>
+                        <span class="font-serif text-lg font-bold text-gold-600">R$ 109,99</span>
+                    </div>
+                    <p class="text-[11px] text-charcoal/60 mt-1">Todas as técnicas + bônus de Português para Nail Instrutora.</p>
+                </div>
+            </label>
+
+            <!-- Opção 2: Avulsa -->
+            <label class="flex items-start gap-3 p-4 rounded-2xl border-2 border-nude-200 cursor-pointer">
+                <input type="radio" name="tipoApostila" value="avulsa" onchange="atualizarTipoApostila()" class="mt-1 h-4 w-4 accent-gold-500">
+                <div class="flex-1">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-sm text-charcoal">Apostila avulsa (escolha 1)</span>
+                        <span class="font-serif text-lg font-bold text-gold-600">R$ 19,90</span>
+                    </div>
+                    <select id="apostilaAvulsaSelect" disabled class="w-full mt-3 px-3 py-2.5 rounded-xl border border-nude-300 text-xs bg-white disabled:opacity-40">
+                        <option value="1-blindagem">1 – Blindagem Nails</option>
+                        <option value="2-formsf1">2 – Forms F1</option>
+                        <option value="3-fibramaster">3 – Fibra Master</option>
+                        <option value="4-russomaster">4 – Russo Master</option>
+                        <option value="5-tipsmaster">5 – Tips Master / Gel na Tips</option>
+                        <option value="6-acriliothree">6 – Acrílico Three</option>
+                        <option value="7-moldadomaster">7 – Moldado Master</option>
+                        <option value="8-banhodegel">8 – Banho de Gel</option>
+                        <option value="9-esmaltacaomaster">9 – Esmaltação Master</option>
+                    </select>
+                </div>
+            </label>
+
+            <button onclick="adicionarApostilaAoCarrinho()" class="w-full py-3 rounded-full border-2 border-charcoal text-charcoal text-xs font-bold uppercase tracking-wider hover:bg-charcoal hover:text-white transition-all">
+                <i class="fa-solid fa-cart-plus mr-1.5"></i> Adicionar ao Carrinho
+            </button>
+
+            <!-- Resumo do Carrinho -->
+            <div class="pt-4 border-t border-nude-100">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-charcoal/70 mb-3">Seu carrinho</h4>
+                <div id="carrinhoItens" class="space-y-2 text-xs text-charcoal/80"></div>
+                <div class="flex justify-between items-center mt-3 pt-3 border-t border-nude-100">
+                    <span class="text-xs font-bold text-charcoal">Total:</span>
+                    <span id="carrinhoTotal" class="font-serif text-xl font-bold text-gold-600">R$ 0,00</span>
+                </div>
+                <button onclick="irParaCheckout()" id="btnFinalizarApostila" disabled class="w-full mt-4 py-3.5 rounded-full gold-gradient-bg text-charcoal font-bold text-xs uppercase tracking-wider shadow-md disabled:opacity-40 disabled:cursor-not-allowed">
+                    Finalizar Compra
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Checkout (Dados pessoais -> Pagamento Mercado Pago -> Confirmação) -->
     <div id="checkoutModal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 space-y-6 relative border border-gold-300">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-6 relative border border-gold-300 max-h-[90vh] overflow-y-auto">
             <button onclick="closeCheckoutModal()" class="absolute top-4 right-4 text-charcoal/50 hover:text-charcoal text-xl">
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
-            <div class="text-center space-y-2">
-                <span class="text-[10px] uppercase tracking-widest font-bold text-gold-600 bg-gold-100 px-2.5 py-1 rounded-full">Redirecionamento Seguro</span>
-                <h3 id="modalTitle" class="font-serif text-2xl font-bold text-charcoal">Nome do Curso</h3>
-                <p class="text-xs text-charcoal/70">Acesso imediato enviado para o seu e-mail e WhatsApp.</p>
+            <!-- Resumo do pedido (visível em todas as etapas) -->
+            <div class="text-center space-y-1">
+                <span class="text-[10px] uppercase tracking-widest font-bold text-gold-600 bg-gold-100 px-2.5 py-1 rounded-full">Checkout Seguro</span>
+                <h3 class="font-serif text-2xl font-bold text-charcoal">Finalizar Pedido</h3>
             </div>
-
-            <div class="bg-nude-50 p-4 rounded-2xl space-y-2 border border-nude-200">
-                <div class="flex justify-between text-xs font-bold">
-                    <span>Valor total:</span>
-                    <span id="modalPrice" class="text-gold-600 text-sm">R$ 0,00</span>
-                </div>
-                <div class="flex items-center gap-2 text-[11px] text-charcoal/70">
-                    <i class="fa-solid fa-shield-check text-green-600"></i>
-                    <span>7 Dias de Garantia Incondicional</span>
+            <div class="bg-nude-50 p-4 rounded-2xl space-y-1 border border-nude-200">
+                <div id="checkoutResumoItens" class="space-y-1 text-xs text-charcoal/80"></div>
+                <div class="flex justify-between text-sm font-bold pt-2 mt-2 border-t border-nude-200">
+                    <span>Total:</span>
+                    <span id="checkoutResumoTotal" class="text-gold-600">R$ 0,00</span>
                 </div>
             </div>
 
-            <a href="https://wa.me/5565981090775?text=Quero%20comprar%20o%20curso%20agora" target="_blank" class="block w-full text-center py-3.5 rounded-full gold-gradient-bg text-charcoal font-bold text-xs uppercase tracking-wider shadow-lg">
-                Ir para o Pagamento Seguro
-            </a>
+            <!-- Etapa 1: Dados pessoais -->
+            <div id="checkoutStepDados" class="space-y-4">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-charcoal/70">Seus dados para envio do produto</h4>
+                <div>
+                    <label class="block text-xs font-bold text-charcoal mb-1.5">Nome completo *</label>
+                    <input type="text" id="checkoutNome" placeholder="Digite seu nome completo" class="w-full px-4 py-3 rounded-xl border border-nude-300 focus:outline-none focus:border-gold-500 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-charcoal mb-1.5">CPF *</label>
+                    <input type="text" id="checkoutCpf" placeholder="000.000.000-00" maxlength="14" class="w-full px-4 py-3 rounded-xl border border-nude-300 focus:outline-none focus:border-gold-500 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-charcoal mb-1.5">E-mail *</label>
+                    <input type="email" id="checkoutEmail" placeholder="seuemail@exemplo.com" class="w-full px-4 py-3 rounded-xl border border-nude-300 focus:outline-none focus:border-gold-500 text-sm">
+                </div>
+                <p id="checkoutDadosErro" class="hidden text-xs text-red-600"></p>
+                <button onclick="avancarParaPagamento()" class="w-full py-3.5 rounded-full gold-gradient-bg text-charcoal font-bold text-xs uppercase tracking-wider shadow-md">
+                    Avançar para Pagamento <i class="fa-solid fa-arrow-right ml-1"></i>
+                </button>
+            </div>
+
+            <!-- Etapa 2: Pagamento (Mercado Pago Payment Brick: Pix, Cartão, Boleto) -->
+            <div id="checkoutStepPagamento" class="hidden space-y-4">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-charcoal/70">Escolha a forma de pagamento</h4>
+                <div id="paymentBrick_container"></div>
+                <button onclick="voltarParaDados()" class="w-full py-2.5 text-charcoal/60 text-xs font-bold uppercase tracking-wider">
+                    &larr; Voltar
+                </button>
+            </div>
+
+            <!-- Etapa 3: Confirmação -->
+            <div id="checkoutStepConfirmacao" class="hidden text-center space-y-4 py-4">
+                <div id="confirmacaoIcone" class="w-16 h-16 mx-auto rounded-full bg-green-100 text-green-600 flex items-center justify-center text-3xl">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <h3 id="confirmacaoTitulo" class="font-serif text-2xl font-bold text-charcoal">Pagamento aprovado!</h3>
+                <p id="confirmacaoTexto" class="text-sm text-charcoal/70 max-w-sm mx-auto">
+                    Assim que a confirmação do pagamento chegar, sua apostila/curso será enviado automaticamente para o e-mail cadastrado.
+                </p>
+                <button onclick="closeCheckoutModal()" class="px-6 py-2.5 rounded-full border border-charcoal text-xs font-bold uppercase tracking-wider">
+                    Fechar
+                </button>
+            </div>
+
+            <p class="text-[11px] text-center text-charcoal/50 flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-lock text-gold-600"></i> Pagamento processado com segurança pelo Mercado Pago.
+            </p>
         </div>
     </div>
 
@@ -1397,15 +1495,332 @@
             document.getElementById('formSuccessMessage').classList.add('hidden');
         }
 
-        // Checkout Modal Logic
-        function openCheckoutModal(title, price) {
-            document.getElementById('modalTitle').textContent = title;
-            document.getElementById('modalPrice').textContent = `R$ ${price}`;
+        // ============================================================
+        // MERCADO PAGO — CONFIGURAÇÃO
+        // TROQUE pela sua Public Key (painel do Mercado Pago > Suas
+        // integrações > Credenciais). A Access Token (secreta) NUNCA
+        // deve ficar no site — ela mora só no servidor (pasta /server).
+        // ============================================================
+        const MP_CONFIG = {
+            PUBLIC_KEY: 'COLE_AQUI_SUA_PUBLIC_KEY_MERCADO_PAGO',
+            // URL do seu backend (veja a pasta /server) que cria o pagamento
+            // usando a Access Token e confirma o status. Não pode ser o
+            // GitHub Pages — precisa de um servidor (Render, Railway etc.)
+            BACKEND_URL: 'COLE_AQUI_A_URL_DO_SEU_BACKEND'
+        };
+
+        const mp = (MP_CONFIG.PUBLIC_KEY.indexOf('COLE_AQUI') === -1)
+            ? new MercadoPago(MP_CONFIG.PUBLIC_KEY, { locale: 'pt-BR' })
+            : null;
+
+        // Catálogo de apostilas (nome de exibição por id)
+        const APOSTILAS = {
+            '1-blindagem': 'Blindagem Nails',
+            '2-formsf1': 'Forms F1',
+            '3-fibramaster': 'Fibra Master',
+            '4-russomaster': 'Russo Master',
+            '5-tipsmaster': 'Tips Master / Gel na Tips',
+            '6-acriliothree': 'Acrílico Three',
+            '7-moldadomaster': 'Moldado Master',
+            '8-banhodegel': 'Banho de Gel',
+            '9-esmaltacaomaster': 'Esmaltação Master'
+        };
+
+        // ============================================================
+        // CARRINHO — usa sessionStorage de propósito: os itens ficam
+        // guardados enquanto a aba/sessão do navegador estiver aberta.
+        // Se a pessoa sair do site e voltar em uma nova sessão (ou
+        // fechar a aba), o carrinho zera automaticamente.
+        // ============================================================
+        function getCart() {
+            try {
+                return JSON.parse(sessionStorage.getItem('studio14_cart') || '[]');
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveCart(cart) {
+            sessionStorage.setItem('studio14_cart', JSON.stringify(cart));
+        }
+
+        function clearCart() {
+            sessionStorage.removeItem('studio14_cart');
+        }
+
+        function cartTotal(cart) {
+            return cart.reduce((sum, item) => sum + item.preco, 0);
+        }
+
+        function formatBRL(valor) {
+            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        // ============================================================
+        // MODAL 1 — Seleção de Apostilas (avulsa ou coleção completa)
+        // ============================================================
+        function openApostilaModal() {
+            clearCart(); // cada abertura começa um pedido novo de apostilas
+            renderCarrinho();
+            atualizarTipoApostila();
+            document.getElementById('apostilaModal').classList.remove('hidden');
+        }
+
+        function closeApostilaModal() {
+            document.getElementById('apostilaModal').classList.add('hidden');
+        }
+
+        function atualizarTipoApostila() {
+            const tipo = document.querySelector('input[name="tipoApostila"]:checked').value;
+            document.getElementById('apostilaAvulsaSelect').disabled = (tipo !== 'avulsa');
+        }
+
+        function adicionarApostilaAoCarrinho() {
+            const tipo = document.querySelector('input[name="tipoApostila"]:checked').value;
+            let item;
+
+            if (tipo === 'colecao') {
+                item = { tipo: 'colecao', nome: 'Coleção Completa (9 Apostilas)', preco: 109.99 };
+            } else {
+                const select = document.getElementById('apostilaAvulsaSelect');
+                const apostilaId = select.value;
+                item = { tipo: 'avulsa', apostilaId, nome: `Apostila Avulsa: ${APOSTILAS[apostilaId]}`, preco: 19.90 };
+            }
+
+            // Compra de apostila é sempre item único no carrinho (evita duplicar o pedido)
+            saveCart([item]);
+            renderCarrinho();
+        }
+
+        function removerDoCarrinho(index) {
+            const cart = getCart();
+            cart.splice(index, 1);
+            saveCart(cart);
+            renderCarrinho();
+        }
+
+        function renderCarrinho() {
+            const cart = getCart();
+            const itensEl = document.getElementById('carrinhoItens');
+            const totalEl = document.getElementById('carrinhoTotal');
+            const btnFinalizar = document.getElementById('btnFinalizarApostila');
+
+            if (cart.length === 0) {
+                itensEl.innerHTML = '<p class="text-charcoal/40 italic">Seu carrinho está vazio.</p>';
+            } else {
+                itensEl.innerHTML = cart.map((item, i) => `
+                    <div class="flex items-center justify-between gap-2 bg-nude-50 px-3 py-2 rounded-lg">
+                        <span>${item.nome}</span>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <span class="font-bold">${formatBRL(item.preco)}</span>
+                            <button onclick="removerDoCarrinho(${i})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            totalEl.textContent = formatBRL(cartTotal(cart));
+            btnFinalizar.disabled = cart.length === 0;
+        }
+
+        function irParaCheckout() {
+            closeApostilaModal();
+            openCheckoutModal();
+        }
+
+        // Curso Online entra direto no carrinho (sem etapa de seleção)
+        function comprarCursoOnline() {
+            saveCart([{ tipo: 'curso', nome: 'Curso Online Master Nail Pro', preco: 497.00 }]);
+            openCheckoutModal();
+        }
+
+        // ============================================================
+        // MODAL 2 — Checkout: Dados pessoais -> Pagamento -> Confirmação
+        // ============================================================
+        function renderResumoPedido() {
+            const cart = getCart();
+            const total = cartTotal(cart);
+            const resumoHtml = cart.map(item => `
+                <div class="flex justify-between"><span>${item.nome}</span><span>${formatBRL(item.preco)}</span></div>
+            `).join('');
+            document.getElementById('checkoutResumoItens').innerHTML = resumoHtml;
+            document.getElementById('checkoutResumoTotal').textContent = formatBRL(total);
+            return total;
+        }
+
+        function openCheckoutModal() {
+            const cart = getCart();
+            if (cart.length === 0) {
+                alert('Seu carrinho está vazio.');
+                return;
+            }
+            renderResumoPedido();
+            document.getElementById('checkoutStepDados').classList.remove('hidden');
+            document.getElementById('checkoutStepPagamento').classList.add('hidden');
+            document.getElementById('checkoutStepConfirmacao').classList.add('hidden');
+            document.getElementById('checkoutDadosErro').classList.add('hidden');
             document.getElementById('checkoutModal').classList.remove('hidden');
         }
 
         function closeCheckoutModal() {
             document.getElementById('checkoutModal').classList.add('hidden');
+        }
+
+        function validarCPF(cpf) {
+            cpf = (cpf || '').replace(/\D/g, '');
+            if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+            let soma = 0, resto;
+            for (let i = 1; i <= 9; i++) soma += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+            resto = (soma * 10) % 11;
+            if (resto === 10 || resto === 11) resto = 0;
+            if (resto !== parseInt(cpf.substring(9, 10))) return false;
+            soma = 0;
+            for (let i = 1; i <= 10; i++) soma += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+            resto = (soma * 10) % 11;
+            if (resto === 10 || resto === 11) resto = 0;
+            return resto === parseInt(cpf.substring(10, 11));
+        }
+
+        // Máscara simples de CPF enquanto digita
+        document.addEventListener('input', (e) => {
+            if (e.target && e.target.id === 'checkoutCpf') {
+                let v = e.target.value.replace(/\D/g, '').slice(0, 11);
+                v = v.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                e.target.value = v;
+            }
+        });
+
+        let compradorAtual = null;
+
+        function avancarParaPagamento() {
+            const nome = document.getElementById('checkoutNome').value.trim();
+            const cpf = document.getElementById('checkoutCpf').value.trim();
+            const email = document.getElementById('checkoutEmail').value.trim();
+            const erroEl = document.getElementById('checkoutDadosErro');
+
+            if (!nome || nome.split(' ').length < 2) {
+                erroEl.textContent = 'Informe seu nome completo.';
+                erroEl.classList.remove('hidden');
+                return;
+            }
+            if (!validarCPF(cpf)) {
+                erroEl.textContent = 'CPF inválido. Confira e tente novamente.';
+                erroEl.classList.remove('hidden');
+                return;
+            }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                erroEl.textContent = 'Informe um e-mail válido.';
+                erroEl.classList.remove('hidden');
+                return;
+            }
+            erroEl.classList.add('hidden');
+
+            compradorAtual = { nome, cpf: cpf.replace(/\D/g, ''), email };
+
+            document.getElementById('checkoutStepDados').classList.add('hidden');
+            document.getElementById('checkoutStepPagamento').classList.remove('hidden');
+            montarPaymentBrick();
+        }
+
+        function voltarParaDados() {
+            document.getElementById('checkoutStepPagamento').classList.add('hidden');
+            document.getElementById('checkoutStepDados').classList.remove('hidden');
+        }
+
+        let paymentBrickController = null;
+
+        // Monta o Payment Brick do Mercado Pago (Pix, Cartão de Crédito e Boleto
+        // no mesmo componente — é o "checkout transparente" oficial deles).
+        async function montarPaymentBrick() {
+            if (!mp) {
+                document.getElementById('paymentBrick_container').innerHTML =
+                    '<p class="text-xs text-red-600 text-center">Configuração do Mercado Pago pendente (MP_CONFIG.PUBLIC_KEY). Fale com o suporte técnico do site.</p>';
+                return;
+            }
+
+            const total = cartTotal(getCart());
+
+            if (paymentBrickController) {
+                paymentBrickController.unmount();
+            }
+
+            const bricksBuilder = mp.bricks();
+            paymentBrickController = await bricksBuilder.create('payment', 'paymentBrick_container', {
+                initialization: {
+                    amount: total,
+                    payer: { email: compradorAtual.email }
+                },
+                customization: {
+                    paymentMethods: {
+                        creditCard: 'all',
+                        ticket: 'all',       // Boleto
+                        bankTransfer: 'all'  // Pix
+                    }
+                },
+                callbacks: {
+                    onReady: () => {},
+                    onError: (error) => {
+                        console.error('Erro no Payment Brick:', error);
+                    },
+                    onSubmit: ({ selectedPaymentMethod, formData }) => {
+                        // Envia os dados do pagamento (tokenizados pelo próprio
+                        // Mercado Pago) + os dados do comprador + o carrinho
+                        // para o SEU backend, que finaliza a cobrança com a
+                        // Access Token (secreta) e nunca fica exposta aqui.
+                        return new Promise((resolve, reject) => {
+                            fetch(`${MP_CONFIG.BACKEND_URL}/process_payment`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    ...formData,
+                                    comprador: compradorAtual,
+                                    itens: getCart()
+                                })
+                            })
+                                .then(resp => resp.json())
+                                .then(resultado => {
+                                    exibirConfirmacao(resultado);
+                                    resolve();
+                                })
+                                .catch(err => {
+                                    console.error(err);
+                                    exibirConfirmacao({ status: 'erro' });
+                                    reject();
+                                });
+                        });
+                    }
+                }
+            });
+        }
+
+        function exibirConfirmacao(resultado) {
+            document.getElementById('checkoutStepPagamento').classList.add('hidden');
+            document.getElementById('checkoutStepConfirmacao').classList.remove('hidden');
+
+            const iconeEl = document.getElementById('confirmacaoIcone');
+            const tituloEl = document.getElementById('confirmacaoTitulo');
+            const textoEl = document.getElementById('confirmacaoTexto');
+
+            if (resultado.status === 'approved') {
+                iconeEl.className = 'w-16 h-16 mx-auto rounded-full bg-green-100 text-green-600 flex items-center justify-center text-3xl';
+                iconeEl.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+                tituloEl.textContent = 'Pagamento aprovado!';
+                textoEl.textContent = 'Seu produto digital já está sendo enviado para o e-mail cadastrado.';
+                clearCart();
+            } else if (resultado.status === 'pending' || resultado.status === 'in_process') {
+                iconeEl.className = 'w-16 h-16 mx-auto rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-3xl';
+                iconeEl.innerHTML = '<i class="fa-solid fa-clock"></i>';
+                tituloEl.textContent = 'Pagamento em processamento';
+                textoEl.textContent = resultado.paymentMethod === 'ticket'
+                    ? 'Seu boleto foi gerado. Assim que o pagamento for compensado, você recebe o produto por e-mail automaticamente.'
+                    : 'Assim que recebermos a confirmação do Pix, o produto é enviado automaticamente para o seu e-mail.';
+                clearCart();
+            } else {
+                iconeEl.className = 'w-16 h-16 mx-auto rounded-full bg-red-100 text-red-600 flex items-center justify-center text-3xl';
+                iconeEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
+                tituloEl.textContent = 'Não foi possível confirmar o pagamento';
+                textoEl.textContent = 'Verifique os dados informados e tente novamente, ou fale com o suporte pelo WhatsApp.';
+            }
         }
 
         // Demo Video Modal Logic (agora com vídeo real)
