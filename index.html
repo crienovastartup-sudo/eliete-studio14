@@ -1577,18 +1577,29 @@
 
         function adicionarApostilaAoCarrinho() {
             const tipo = document.querySelector('input[name="tipoApostila"]:checked').value;
+            const cart = getCart();
             let item;
 
             if (tipo === 'colecao') {
+                if (cart.some(i => i.tipo === 'colecao')) {
+                    alert('A Coleção Completa já está no seu carrinho.');
+                    return;
+                }
                 item = { tipo: 'colecao', nome: 'Coleção Completa (9 Apostilas)', preco: 109.99 };
             } else {
                 const select = document.getElementById('apostilaAvulsaSelect');
                 const apostilaId = select.value;
+                if (cart.some(i => i.tipo === 'avulsa' && i.apostilaId === apostilaId)) {
+                    alert('Essa apostila já está no seu carrinho.');
+                    return;
+                }
                 item = { tipo: 'avulsa', apostilaId, nome: `Apostila Avulsa: ${APOSTILAS[apostilaId]}`, preco: 19.90 };
             }
 
-            // Compra de apostila é sempre item único no carrinho (evita duplicar o pedido)
-            saveCart([item]);
+            // Adiciona ao carrinho existente — dá para levar várias apostilas avulsas
+            // (ou combinar com a coleção completa) na mesma compra.
+            cart.push(item);
+            saveCart(cart);
             renderCarrinho();
         }
 
