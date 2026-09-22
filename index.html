@@ -1455,6 +1455,8 @@
         // TROQUE pela URL do seu deployment do Apps Script
         // ============================================================
         const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbwnaBbf6ycOQghfHPQ7y6LnpmGft_7NolbJya97qTaN2Wvau-SKWHi793sBxoW5vPh01g/exec';
+        // Mesma chave configurada em "Propriedades do script" (propriedade API_KEY) no Apps Script.
+        const APP_API_KEY = 'hypEPwreT82ulYb0HQg716ItJx9D60tt';
         let servicoAtual = '';
         let valorAtual = 0;
         let dataAtual = '';
@@ -1618,6 +1620,7 @@
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita preflight CORS
                     body: JSON.stringify({
                         action: 'criarAgendamento',
+                        apiKey: APP_API_KEY,
                         nome, cpf, telefone, email, observacao,
                         servico: servicoAtual, valorServico: valorAtual,
                         data: dataAtual, hora: horaAtual
