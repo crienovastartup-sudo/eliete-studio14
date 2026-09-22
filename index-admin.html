@@ -19,6 +19,26 @@ tailwind.config = { theme: { extend: {
   .tab-active{ background:#1A1817; color:#F3DB9A; }
   .badge{ font-size:11px; font-weight:700; text-transform:uppercase; padding:2px 8px; border-radius:9999px; }
   ::-webkit-scrollbar{ height:6px; width:6px; } ::-webkit-scrollbar-thumb{ background:#D4AF37; border-radius:4px; }
+
+  /* ===== Menu lateral (sidebar) ===== */
+  /* :not(.hidden) garante que isso nunca vença o "hidden" do Tailwind (evita
+     que um item admin-only apareça antes do login terminar de checar o papel). */
+  .sidebar-item:not(.hidden){ display:flex; align-items:center; gap:.75rem; width:100%; padding:.6rem .75rem; border-radius:.75rem;
+    font-size:.875rem; font-weight:700; color:#DDD3C6; text-align:left; white-space:nowrap; overflow:hidden; }
+  .sidebar-item:hover{ background:rgba(255,255,255,.06); }
+  .sidebar-item.tab-active{ background:rgba(212,175,55,.16); color:#F3DB9A; }
+  .sidebar-icon{ width:1.1rem; text-align:center; flex-shrink:0; }
+  #sidebar{ transition: width .18s ease, transform .18s ease; }
+  #sidebar.sidebar-collapsed{ width:5rem; }
+  #sidebar.sidebar-collapsed .sidebar-label,
+  #sidebar.sidebar-collapsed #sidebarBrand,
+  #sidebar.sidebar-collapsed #sidebarCollapseLabel{ display:none; }
+  #sidebar.sidebar-collapsed .sidebar-item{ justify-content:center; padding-left:0; padding-right:0; }
+  #sidebar.sidebar-collapsed .sidebar-item .sidebar-icon{ margin:0; }
+  @media (max-width: 1023px){
+    #sidebar{ position:fixed; top:0; bottom:0; left:0; transform:translateX(-100%); }
+    #sidebar.sidebar-open{ transform:translateX(0); }
+  }
 </style>
 </head>
 <body class="bg-nude-50 text-charcoal font-sans">
@@ -36,7 +56,7 @@ tailwind.config = { theme: { extend: {
   // A versão do index.html precisa ser copiada daqui (VERSAO_INDEX
   // dentro do próprio index.html) sempre que você atualizar os dois juntos.
   // ============================================================
-  const VERSAO_ADMIN = '1.2.0 · 22/09/2026';
+  const VERSAO_ADMIN = '1.3.0 · 22/09/2026';
   const VERSAO_INDEX_PUBLICO = '1.2.0 · 22/09/2026';
 
   async function mostrarVersoes() {
@@ -67,35 +87,99 @@ tailwind.config = { theme: { extend: {
 </div>
 
 <!-- ===== APP ===== -->
-<div id="app" class="hidden">
+<div id="app" class="hidden lg:flex">
 
-  <!-- Header -->
-  <header class="sticky top-0 z-30 bg-charcoal text-nude-100 border-b border-gold-500/20">
-    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-full bg-gold-500 text-charcoal flex items-center justify-center font-serif font-bold">14</div>
-        <span class="font-serif text-lg font-bold tracking-wide">Painel Interno</span>
+  <!-- Menu lateral -->
+  <aside id="sidebar" class="w-64 shrink-0 bg-charcoal text-nude-100 border-r border-gold-500/20 flex flex-col lg:sticky lg:top-0 lg:h-screen z-40">
+    <div class="h-16 flex items-center gap-3 px-5 border-b border-gold-500/20 shrink-0 overflow-hidden">
+      <div class="w-9 h-9 rounded-full bg-gold-500 text-charcoal flex items-center justify-center font-serif font-bold shrink-0">14</div>
+      <span id="sidebarBrand" class="font-serif text-lg font-bold tracking-wide whitespace-nowrap">Painel Interno</span>
+    </div>
+    <nav id="sidebarNav" class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+      <button class="tab-btn sidebar-item admin-only hidden" data-tab="dashboard"><i class="fa-solid fa-gauge-high sidebar-icon"></i><span class="sidebar-label">Dashboard</span></button>
+      <button class="tab-btn sidebar-item" data-tab="agendamentos" data-perm="agendamentos"><i class="fa-solid fa-calendar-check sidebar-icon"></i><span class="sidebar-label">Agendamentos</span></button>
+      <button class="tab-btn sidebar-item" data-tab="atendimentos" data-perm="atendimentos"><i class="fa-solid fa-hand-sparkles sidebar-icon"></i><span class="sidebar-label">Atendimentos</span></button>
+      <button class="tab-btn sidebar-item" data-tab="clientes" data-perm="clientes"><i class="fa-solid fa-users sidebar-icon"></i><span class="sidebar-label">Clientes</span></button>
+      <button class="tab-btn sidebar-item" data-tab="retorno" data-perm="retorno"><i class="fa-solid fa-rotate-left sidebar-icon"></i><span class="sidebar-label">Retorno / Sem Sinal</span></button>
+      <button class="tab-btn sidebar-item" data-tab="servicos" data-perm="servicos"><i class="fa-solid fa-list-check sidebar-icon"></i><span class="sidebar-label">Serviços</span></button>
+      <button class="tab-btn sidebar-item" data-tab="profissionais" data-perm="profissionais"><i class="fa-solid fa-user-tie sidebar-icon"></i><span class="sidebar-label">Profissionais</span></button>
+      <button class="tab-btn sidebar-item admin-only hidden" data-tab="mesas"><i class="fa-solid fa-table-cells sidebar-icon"></i><span class="sidebar-label">Mesas</span></button>
+      <button class="tab-btn sidebar-item admin-only hidden" data-tab="usuarios"><i class="fa-solid fa-user-shield sidebar-icon"></i><span class="sidebar-label">Usuários</span></button>
+    </nav>
+    <div class="p-3 border-t border-gold-500/20 shrink-0">
+      <div class="hidden lg:block">
+        <button onclick="toggleSidebarCollapse()" class="sidebar-item justify-center text-gold-400">
+          <i id="sidebarCollapseIcon" class="fa-solid fa-angles-left sidebar-icon"></i>
+          <span id="sidebarCollapseLabel" class="sidebar-label">Recolher menu</span>
+        </button>
       </div>
-      <div class="flex items-center gap-4 text-sm text-nude-300">
-        <span id="usuarioLogado"></span>
-        <button onclick="fazerLogout()" class="text-gold-400 hover:text-gold-300"><i class="fa-solid fa-arrow-right-from-bracket mr-1"></i>Sair</button>
+      <div class="lg:hidden">
+        <button onclick="fecharSidebarMobile()" class="sidebar-item justify-center text-gold-400">
+          <i class="fa-solid fa-xmark sidebar-icon"></i><span class="sidebar-label">Fechar menu</span>
+        </button>
       </div>
     </div>
-  </header>
+  </aside>
 
-  <!-- Abas -->
-  <nav class="max-w-7xl mx-auto px-6 mt-6 flex gap-2 overflow-x-auto pb-2">
-    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap" data-tab="agendamentos" data-perm="agendamentos">Agendamentos</button>
-    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap" data-tab="atendimentos" data-perm="atendimentos">Atendimentos</button>
-    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap" data-tab="clientes" data-perm="clientes">Clientes</button>
-    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap" data-tab="retorno" data-perm="retorno">Retorno / Sem Sinal</button>
-    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap" data-tab="servicos" data-perm="servicos">Serviços</button>
-    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap" data-tab="profissionais" data-perm="profissionais">Profissionais</button>
-    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap admin-only hidden" data-tab="mesas">Mesas</button>
-    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap admin-only hidden" data-tab="usuarios">Usuários</button>
-  </nav>
+  <!-- Fundo escurecido ao abrir o menu no celular -->
+  <div id="sidebarOverlay" onclick="fecharSidebarMobile()" class="fixed inset-0 bg-black/40 z-30 hidden lg:hidden"></div>
 
-  <main class="max-w-7xl mx-auto px-6 pb-16 mt-4 space-y-6">
+  <div class="flex-1 min-w-0">
+    <!-- Header -->
+    <header class="sticky top-0 z-20 bg-charcoal text-nude-100 border-b border-gold-500/20">
+      <div class="px-4 lg:px-6 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <button onclick="abrirSidebarMobile()" class="lg:hidden text-gold-400 text-lg px-1"><i class="fa-solid fa-bars"></i></button>
+          <span id="headerTitulo" class="font-serif text-lg font-bold tracking-wide">Painel Interno</span>
+        </div>
+        <div class="flex items-center gap-4 text-sm text-nude-300">
+          <span id="usuarioLogado"></span>
+          <button onclick="fazerLogout()" class="text-gold-400 hover:text-gold-300"><i class="fa-solid fa-arrow-right-from-bracket mr-1"></i>Sair</button>
+        </div>
+      </div>
+    </header>
+
+  <main class="max-w-7xl mx-auto px-4 lg:px-6 pb-16 mt-4 space-y-6">
+
+    <!-- Dashboard -->
+    <div class="tab-content hidden" id="tab-dashboard">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-serif text-xl font-bold">Dashboard</h2>
+        <button onclick="carregarDashboard()" class="text-sm font-bold border border-nude-300 text-charcoal px-3 py-1.5 rounded-lg"><i class="fa-solid fa-rotate mr-1"></i>Atualizar</button>
+      </div>
+
+      <div class="grid sm:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded-2xl border border-nude-200 p-4">
+          <p class="text-xs uppercase tracking-wider text-charcoal/40 font-bold mb-1">Faturamento de hoje</p>
+          <p id="dashFaturamentoHoje" class="font-serif text-3xl font-bold ledger-num">—</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-nude-200 p-4">
+          <p class="text-xs uppercase tracking-wider text-charcoal/40 font-bold mb-1">Clientes atendidos hoje</p>
+          <p id="dashClientesHoje" class="font-serif text-3xl font-bold ledger-num">—</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-nude-200 p-4">
+          <p class="text-xs uppercase tracking-wider text-charcoal/40 font-bold mb-1">Ticket médio hoje</p>
+          <p id="dashTicketMedioHoje" class="font-serif text-3xl font-bold ledger-num">—</p>
+        </div>
+      </div>
+
+      <div class="grid lg:grid-cols-2 gap-6">
+        <div class="bg-white rounded-2xl border border-nude-200 p-4">
+          <h3 class="font-serif text-lg font-bold mb-3">Previsão de faturamento (próximas semanas)</h3>
+          <div id="dashPrevisaoSemanas" class="space-y-3"></div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-nude-200 p-4">
+          <h3 class="font-serif text-lg font-bold mb-3">Serviços mais utilizados</h3>
+          <div id="dashServicosMaisUtilizados" class="divide-y divide-nude-100"></div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-nude-200 p-4 lg:col-span-2">
+          <h3 class="font-serif text-lg font-bold mb-3">Ranking de Nail Designers</h3>
+          <div id="dashRankingProfissionais" class="divide-y divide-nude-100"></div>
+        </div>
+      </div>
+    </div>
 
     <!-- Agendamentos -->
     <div class="tab-content" id="tab-agendamentos">
@@ -228,6 +312,7 @@ tailwind.config = { theme: { extend: {
     </div>
 
   </main>
+  </div>
 </div>
 
 <script>
@@ -235,6 +320,37 @@ tailwind.config = { theme: { extend: {
 // SESSÃO
 // ============================================================
 let SESSAO = null; // { token, nome, papel, profissionalId }
+
+const NOMES_ABAS = {
+  dashboard: 'Dashboard', agendamentos: 'Agendamentos', atendimentos: 'Atendimentos',
+  clientes: 'Clientes', retorno: 'Retorno / Sem Sinal', servicos: 'Serviços',
+  profissionais: 'Profissionais', mesas: 'Mesas', usuarios: 'Usuários'
+};
+
+// ============================================================
+// Menu lateral (sidebar)
+// ============================================================
+function abrirSidebarMobile(){
+  document.getElementById('sidebar').classList.add('sidebar-open');
+  document.getElementById('sidebarOverlay').classList.remove('hidden');
+}
+function fecharSidebarMobile(){
+  document.getElementById('sidebar').classList.remove('sidebar-open');
+  document.getElementById('sidebarOverlay').classList.add('hidden');
+}
+function toggleSidebarCollapse(){
+  const colapsado = document.getElementById('sidebar').classList.toggle('sidebar-collapsed');
+  document.getElementById('sidebarCollapseIcon').className = 'fa-solid sidebar-icon ' + (colapsado ? 'fa-angles-right' : 'fa-angles-left');
+  localStorage.setItem('studio14_sidebar_collapsed', colapsado ? '1' : '0');
+}
+(function restaurarSidebarCollapse(){
+  if (localStorage.getItem('studio14_sidebar_collapsed') === '1') {
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('sidebar').classList.add('sidebar-collapsed');
+      document.getElementById('sidebarCollapseIcon').className = 'fa-solid sidebar-icon fa-angles-right';
+    });
+  }
+})();
 
 async function fazerLogin(){
   const usuario = document.getElementById('loginUsuario').value;
@@ -292,6 +408,7 @@ function entrarNoApp(){
   if (primeiraAba) {
     primeiraAba.classList.add('tab-active');
     document.getElementById('tab-' + primeiraAba.dataset.tab).classList.remove('hidden');
+    document.getElementById('headerTitulo').textContent = NOMES_ABAS[primeiraAba.dataset.tab] || 'Painel Interno';
     carregarAbaAtual(primeiraAba.dataset.tab);
   }
 }
@@ -314,11 +431,14 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     btn.classList.add('tab-active');
     document.querySelectorAll('.tab-content').forEach(c=>c.classList.add('hidden'));
     document.getElementById('tab-'+btn.dataset.tab).classList.remove('hidden');
+    document.getElementById('headerTitulo').textContent = NOMES_ABAS[btn.dataset.tab] || 'Painel Interno';
     carregarAbaAtual(btn.dataset.tab);
+    fecharSidebarMobile();
   });
 });
 
 function carregarAbaAtual(tab){
+  if (tab === 'dashboard') carregarDashboard();
   if (tab === 'agendamentos') carregarAgendamentos();
   if (tab === 'atendimentos') carregarAtendimentos();
   if (tab === 'clientes') carregarClientes();
@@ -346,6 +466,37 @@ async function apiPost(action, dados){
   dados.token = SESSAO ? SESSAO.token : '';
   const resp = await fetch(WEBAPP_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(dados) });
   return resp.json();
+}
+
+// ============================================================
+// Dashboard
+// ============================================================
+async function carregarDashboard(){
+  const r = await apiGet('dashboard');
+  if (!r.ok) { alert('Erro ao carregar dashboard: ' + r.erro); return; }
+
+  document.getElementById('dashFaturamentoHoje').textContent = fmt(r.faturamentoHoje);
+  document.getElementById('dashClientesHoje').textContent = r.clientesAtendidosHoje;
+  const ticketMedio = r.clientesAtendidosHoje > 0 ? r.faturamentoHoje / r.clientesAtendidosHoje : 0;
+  document.getElementById('dashTicketMedioHoje').textContent = fmt(ticketMedio);
+
+  const maxSemana = Math.max(1, ...r.previsaoSemanas.map(s => s.valor));
+  document.getElementById('dashPrevisaoSemanas').innerHTML = r.previsaoSemanas.map(s => `
+    <div>
+      <div class="flex justify-between text-sm mb-1"><span>${s.label}</span><span class="ledger-num font-bold">${fmt(s.valor)}</span></div>
+      <div class="h-2 rounded-full bg-nude-100 overflow-hidden"><div class="h-full bg-gold-500" style="width:${Math.round((s.valor/maxSemana)*100)}%"></div></div>
+    </div>`).join('') || '<p class="text-charcoal/40 text-sm">Sem agendamentos futuros ainda.</p>';
+
+  document.getElementById('dashServicosMaisUtilizados').innerHTML = r.servicosMaisUtilizados.map(s => `
+    <div class="py-2 flex items-center justify-between text-sm">
+      <span>${s.nome}</span><span class="ledger-num font-bold">${s.qtd}x</span>
+    </div>`).join('') || '<p class="text-charcoal/40 text-sm py-2">Sem atendimentos registrados ainda.</p>';
+
+  document.getElementById('dashRankingProfissionais').innerHTML = r.rankingProfissionais.map((p, i) => `
+    <div class="py-2 flex items-center justify-between text-sm">
+      <span><span class="text-charcoal/40 mr-2">#${i+1}</span><strong>${p.nome}</strong></span>
+      <span class="text-right"><span class="ledger-num font-bold">${p.qtd}</span> atend. · <span class="ledger-num">${fmt(p.valor)}</span></span>
+    </div>`).join('') || '<p class="text-charcoal/40 text-sm py-2">Sem atendimentos registrados ainda.</p>';
 }
 
 // ============================================================
