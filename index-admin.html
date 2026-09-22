@@ -30,6 +30,26 @@ tailwind.config = { theme: { extend: {
   const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbztKAG3uE_fi9CKjsJMJnYoAJqPHDF3uXl4AyDDip_vm_GMOG7Z7L-7Xzxa1OjgmNDJ/exec';
   // Mesma chave configurada em "Propriedades do script" (propriedade API_KEY) no Apps Script.
   const APP_API_KEY = 'hypEPwreT82ulYb0HQg716ItJx9D60tt';
+
+  // ============================================================
+  // CONTROLE DE VERSÃO — atualize manualmente a cada publicação.
+  // A versão do index.html precisa ser copiada daqui (VERSAO_INDEX
+  // dentro do próprio index.html) sempre que você atualizar os dois juntos.
+  // ============================================================
+  const VERSAO_ADMIN = '1.1.0 · 22/09/2026';
+  const VERSAO_INDEX_PUBLICO = '1.1.0 · 22/09/2026';
+
+  async function mostrarVersoes() {
+    const el = document.getElementById('versoesInfo');
+    let versaoBackend = '(não foi possível consultar)';
+    try {
+      const resp = await fetch(`${WEBAPP_URL}?action=versao`);
+      const r = await resp.json();
+      if (r.ok) versaoBackend = r.versaoBackend;
+    } catch (e) {}
+    el.innerHTML = `Painel (admin): v${VERSAO_ADMIN}<br>Site público (index): v${VERSAO_INDEX_PUBLICO}<br>Backend (Apps Script): v${versaoBackend}`;
+  }
+  mostrarVersoes();
 </script>
 
 <!-- ===== TELA DE LOGIN (usuário/senha reais, via Apps Script) ===== -->
@@ -42,6 +62,7 @@ tailwind.config = { theme: { extend: {
     <input id="loginSenha" type="password" placeholder="Senha" class="w-full px-4 py-3 rounded-xl border border-nude-200 text-sm text-center">
     <button onclick="fazerLogin()" class="w-full py-3 rounded-full bg-charcoal text-gold-300 text-xs font-bold uppercase tracking-wider">Entrar</button>
     <p id="loginErro" class="text-xs text-warn hidden"></p>
+    <div id="versoesInfo" class="pt-3 border-t border-nude-100 text-[10px] text-charcoal/40 leading-relaxed"></div>
   </div>
 </div>
 
