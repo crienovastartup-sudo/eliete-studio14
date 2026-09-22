@@ -8,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1300,24 +1301,73 @@
     <!-- Modal 3: Agendamento (checa disponibilidade via Google Apps Script) -->
     <div id="agendamentoModal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-md w-full p-8 space-y-4 relative border border-gold-300 max-h-[90vh] overflow-y-auto">
-            <button onclick="document.getElementById('agendamentoModal').classList.add('hidden')" class="absolute top-4 right-4 text-charcoal/50 text-xl">
+            <button onclick="fecharAgendamentoModal()" class="absolute top-4 right-4 text-charcoal/50 text-xl">
                 <i class="fa-solid fa-xmark"></i>
             </button>
-            <h3 class="font-serif text-2xl font-bold text-charcoal" id="agendamentoServico">Agendar Serviço</h3>
-            <div id="agResumoData" class="bg-nude-50 border border-nude-200 rounded-xl p-3 text-xs font-bold text-charcoal"></div>
-            <p class="text-[11px] text-charcoal/60">Sinal fixo de R$ 30,00 para garantir o horário. Chegue 20 minutos antes do horário marcado.</p>
 
-            <input type="text" id="agNome" placeholder="Seu nome completo" class="w-full px-4 py-3 rounded-xl border border-nude-300 text-sm">
-            <input type="text" id="agCpf" placeholder="CPF" maxlength="14" class="w-full px-4 py-3 rounded-xl border border-nude-300 text-sm">
-            <input type="tel" id="agTelefone" placeholder="WhatsApp com DDD" class="w-full px-4 py-3 rounded-xl border border-nude-300 text-sm">
-            <input type="email" id="agEmail" placeholder="E-mail (opcional)" class="w-full px-4 py-3 rounded-xl border border-nude-300 text-sm">
-            <textarea id="agObservacao" rows="2" placeholder="Observação (opcional): alergias, preferências, etc." class="w-full px-4 py-3 rounded-xl border border-nude-300 text-sm"></textarea>
+            <!-- Etapa 1: dados do agendamento -->
+            <div id="agendamentoStepDados">
+                <h3 class="font-serif text-2xl font-bold text-charcoal" id="agendamentoServico">Agendar Serviço</h3>
+                <div id="agResumoData" class="bg-nude-50 border border-nude-200 rounded-xl p-3 text-xs font-bold text-charcoal my-3"></div>
+                <div class="bg-gold-50 border-2 border-gold-400 rounded-xl p-3 mb-3">
+                    <p class="text-sm font-bold text-gold-800"><i class="fa-solid fa-circle-info mr-1"></i> Sinal fixo de R$ 30,00 para garantir o horário.</p>
+                    <p class="text-xs text-gold-700 mt-1">Chegue 20 minutos antes do horário marcado.</p>
+                </div>
 
-            <div id="agMensagem" class="text-xs"></div>
+                <div class="space-y-3">
+                    <input type="text" id="agNome" placeholder="Seu nome completo" class="w-full px-4 py-3 rounded-xl border border-nude-300 text-sm">
+                    <input type="text" id="agCpf" placeholder="CPF" maxlength="14" class="w-full px-4 py-3 rounded-xl border border-nude-300 text-sm">
+                    <input type="tel" id="agTelefone" placeholder="WhatsApp com DDD" class="w-full px-4 py-3 rounded-xl border border-nude-300 text-sm">
+                    <input type="email" id="agEmail" placeholder="E-mail (opcional)" class="w-full px-4 py-3 rounded-xl border border-nude-300 text-sm">
+                    <textarea id="agObservacao" rows="2" placeholder="Observação (opcional): alergias, preferências, etc." class="w-full px-4 py-3 rounded-xl border border-nude-300 text-sm"></textarea>
+                </div>
 
-            <button onclick="confirmarAgendamento()" class="w-full py-3.5 rounded-full gold-gradient-bg text-charcoal font-bold text-xs uppercase tracking-wider">
-                Confirmar Agendamento
-            </button>
+                <div id="agMensagem" class="text-sm font-semibold mt-3"></div>
+
+                <button id="btnConfirmarAgendamento" onclick="confirmarAgendamento()" class="w-full py-3.5 rounded-full gold-gradient-bg text-charcoal font-bold text-xs uppercase tracking-wider mt-3">
+                    Confirmar Agendamento
+                </button>
+            </div>
+
+            <!-- Etapa 2: pagamento do sinal via Pix (só aparece quando o sinal é necessário) -->
+            <div id="agendamentoStepPix" class="hidden text-center space-y-4">
+                <div class="w-14 h-14 mx-auto rounded-full bg-green-100 text-green-600 flex items-center justify-center text-2xl">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <h3 class="font-serif text-2xl font-bold text-charcoal">Agendamento reservado!</h3>
+                <p class="text-sm text-charcoal/70">Agora envie o sinal de <strong>R$ 30,00</strong> via Pix para garantir seu horário.</p>
+
+                <div id="pixQrCode" class="flex justify-center"></div>
+
+                <div class="bg-nude-50 border border-nude-200 rounded-xl p-3 text-left">
+                    <span class="text-[10px] uppercase tracking-wider text-charcoal/50 font-bold block mb-1">Pix Copia e Cola</span>
+                    <div class="flex gap-2">
+                        <input id="pixCopiaCola" type="text" readonly class="flex-1 text-[10px] px-2 py-2 rounded-lg border border-nude-300 bg-white">
+                        <button onclick="copiarPixCola()" class="px-3 py-2 rounded-lg bg-charcoal text-white text-xs font-bold">Copiar</button>
+                    </div>
+                </div>
+
+                <div class="border-t border-nude-100 pt-4 text-left space-y-2">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-charcoal">Envie o comprovante do Pix</label>
+                    <input type="file" id="comprovanteInput" accept="image/*" class="w-full text-xs">
+                    <button onclick="enviarComprovante()" class="w-full py-3 rounded-full border-2 border-charcoal text-charcoal text-xs font-bold uppercase tracking-wider">
+                        Enviar Comprovante
+                    </button>
+                    <p id="comprovanteMsg" class="text-xs"></p>
+                </div>
+            </div>
+
+            <!-- Etapa 3: concluído (sem necessidade de comprovante, ex: sinal reaproveitado) -->
+            <div id="agendamentoStepFinal" class="hidden text-center space-y-3">
+                <div class="w-14 h-14 mx-auto rounded-full bg-green-100 text-green-600 flex items-center justify-center text-2xl">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <h3 class="font-serif text-2xl font-bold text-charcoal">Tudo certo!</h3>
+                <p id="agendamentoFinalMsg" class="text-sm text-charcoal/70"></p>
+                <button onclick="fecharAgendamentoModal()" class="w-full py-3.5 rounded-full gold-gradient-bg text-charcoal font-bold text-xs uppercase tracking-wider">
+                    Fechar
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1462,7 +1512,7 @@
         // CONTROLE DE VERSÃO deste arquivo (index.html)
         // Atualize esse valor manualmente sempre que subir uma nova versão.
         // ============================================================
-        const VERSAO_INDEX = '1.1.0 · 22/09/2026';
+        const VERSAO_INDEX = '1.2.0 · 22/09/2026';
         document.getElementById('siteVersion').textContent = `Studio 14 · v${VERSAO_INDEX}`;
 
         const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbztKAG3uE_fi9CKjsJMJnYoAJqPHDF3uXl4AyDDip_vm_GMOG7Z7L-7Xzxa1OjgmNDJ/exec';
@@ -1607,7 +1657,69 @@
             document.getElementById('agEmail').value = cliente.email || '';
             document.getElementById('agObservacao').value = '';
             document.getElementById('agMensagem').innerHTML = '';
+            document.getElementById('agendamentoStepDados').classList.remove('hidden');
+            document.getElementById('agendamentoStepPix').classList.add('hidden');
+            document.getElementById('agendamentoStepFinal').classList.add('hidden');
             document.getElementById('agendamentoModal').classList.remove('hidden');
+        }
+
+        // ============================================================
+        // PIX — geração do QR Code / Copia e Cola (padrão BR Code / EMV)
+        // TROQUE pelos dados reais de recebimento do Studio 14.
+        // ============================================================
+        const PIX_CONFIG = {
+            chave: 'COLE_AQUI_SUA_CHAVE_PIX', // e-mail, telefone, CPF/CNPJ ou chave aleatória
+            nomeRecebedor: 'ELIETI COUTINHO',  // sem acento, até 25 caracteres
+            cidade: 'CUIABA'                   // sem acento, até 15 caracteres
+        };
+
+        function tlvPix(id, value) {
+            const len = String(value.length).padStart(2, '0');
+            return id + len + value;
+        }
+
+        function crc16ccitt(str) {
+            let crc = 0xFFFF;
+            for (let i = 0; i < str.length; i++) {
+                crc ^= str.charCodeAt(i) << 8;
+                for (let j = 0; j < 8; j++) {
+                    crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) : (crc << 1);
+                    crc &= 0xFFFF;
+                }
+            }
+            return crc.toString(16).toUpperCase().padStart(4, '0');
+        }
+
+        function gerarPayloadPix(valor, txid) {
+            const gui = tlvPix('00', 'br.gov.bcb.pix');
+            const chaveTlv = tlvPix('01', PIX_CONFIG.chave);
+            const merchantAccount = tlvPix('26', gui + chaveTlv);
+            const mcc = tlvPix('52', '0000');
+            const moeda = tlvPix('53', '986');
+            const valorTlv = tlvPix('54', Number(valor).toFixed(2));
+            const pais = tlvPix('58', 'BR');
+            const nome = tlvPix('59', PIX_CONFIG.nomeRecebedor.substring(0, 25));
+            const cid = tlvPix('60', PIX_CONFIG.cidade.substring(0, 15));
+            const addData = tlvPix('62', tlvPix('05', (txid || '***').substring(0, 25)));
+            const semCrc = tlvPix('00', '01') + merchantAccount + mcc + moeda + valorTlv + pais + nome + cid + addData + '6304';
+            return semCrc + crc16ccitt(semCrc);
+        }
+
+        function copiarPixCola() {
+            const campo = document.getElementById('pixCopiaCola');
+            campo.select();
+            document.execCommand('copy');
+            alert('Código Pix copiado!');
+        }
+
+        let idAgendamentoAtual = '';
+
+        function fecharAgendamentoModal() {
+            document.getElementById('agendamentoModal').classList.add('hidden');
+            // Reseta as etapas para a próxima vez que o modal abrir
+            document.getElementById('agendamentoStepDados').classList.remove('hidden');
+            document.getElementById('agendamentoStepPix').classList.add('hidden');
+            document.getElementById('agendamentoStepFinal').classList.add('hidden');
         }
 
         async function confirmarAgendamento() {
@@ -1617,6 +1729,7 @@
             const email = document.getElementById('agEmail').value;
             const observacao = document.getElementById('agObservacao').value;
             const msgEl = document.getElementById('agMensagem');
+            const btn = document.getElementById('btnConfirmarAgendamento');
 
             if (!nome || !cpf || !telefone) {
                 msgEl.innerHTML = '<span class="text-red-600">Preencha nome, CPF e WhatsApp.</span>';
@@ -1624,6 +1737,7 @@
             }
 
             msgEl.innerHTML = '<span class="text-charcoal/60">Confirmando agendamento...</span>';
+            btn.disabled = true;
 
             try {
                 const resp = await fetch(WEBAPP_URL, {
@@ -1638,16 +1752,85 @@
                     })
                 });
                 const resultado = await resp.json();
+                btn.disabled = false;
 
                 if (resultado.ok) {
-                    msgEl.innerHTML = `<span class="text-green-600 font-bold">${resultado.mensagem}</span>`;
+                    idAgendamentoAtual = resultado.id;
+                    document.getElementById('agendamentoStepDados').classList.add('hidden');
+
+                    if (resultado.sinalNecessario > 0) {
+                        // Precisa pagar o sinal via Pix
+                        document.getElementById('agendamentoStepPix').classList.remove('hidden');
+                        document.getElementById('pixQrCode').innerHTML = '';
+                        const payload = gerarPayloadPix(resultado.sinalNecessario, resultado.id);
+                        new QRCode(document.getElementById('pixQrCode'), { text: payload, width: 180, height: 180 });
+                        document.getElementById('pixCopiaCola').value = payload;
+                        document.getElementById('comprovanteMsg').innerHTML = '';
+                    } else {
+                        // Sinal reaproveitado — não precisa pagar de novo
+                        document.getElementById('agendamentoStepFinal').classList.remove('hidden');
+                        document.getElementById('agendamentoFinalMsg').textContent = resultado.mensagem;
+                    }
                 } else if (resultado.erro === 'conflito') {
                     msgEl.innerHTML = `<span class="text-red-600">Esse horário acabou de ser ocupado. Escolha outro na agenda.</span>`;
                 } else {
                     msgEl.innerHTML = `<span class="text-red-600">${resultado.mensagem || resultado.erro}</span>`;
                 }
             } catch (e) {
+                btn.disabled = false;
                 msgEl.innerHTML = '<span class="text-red-600">Erro ao conectar. Tente novamente ou fale pelo WhatsApp.</span>';
+            }
+        }
+
+        function arquivoParaBase64(arquivo) {
+            return new Promise((resolve, reject) => {
+                const leitor = new FileReader();
+                leitor.onload = () => resolve(leitor.result.split(',')[1]);
+                leitor.onerror = reject;
+                leitor.readAsDataURL(arquivo);
+            });
+        }
+
+        async function enviarComprovante() {
+            const input = document.getElementById('comprovanteInput');
+            const msgEl = document.getElementById('comprovanteMsg');
+            const arquivo = input.files[0];
+
+            if (!arquivo) {
+                msgEl.innerHTML = '<span class="text-red-600">Selecione a imagem do comprovante.</span>';
+                return;
+            }
+            if (arquivo.size > 4 * 1024 * 1024) {
+                msgEl.innerHTML = '<span class="text-red-600">Imagem muito grande (máx. 4MB). Tente uma foto mais leve.</span>';
+                return;
+            }
+
+            msgEl.innerHTML = '<span class="text-charcoal/60">Enviando comprovante...</span>';
+
+            try {
+                const base64 = await arquivoParaBase64(arquivo);
+                const resp = await fetch(WEBAPP_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: 'anexarComprovante',
+                        apiKey: APP_API_KEY,
+                        agendamentoId: idAgendamentoAtual,
+                        imagemBase64: base64,
+                        mimeType: arquivo.type
+                    })
+                });
+                const resultado = await resp.json();
+
+                if (resultado.ok) {
+                    document.getElementById('agendamentoStepPix').classList.add('hidden');
+                    document.getElementById('agendamentoStepFinal').classList.remove('hidden');
+                    document.getElementById('agendamentoFinalMsg').textContent = resultado.mensagem;
+                } else {
+                    msgEl.innerHTML = `<span class="text-red-600">${resultado.erro}</span>`;
+                }
+            } catch (e) {
+                msgEl.innerHTML = '<span class="text-red-600">Erro ao enviar. Tente novamente.</span>';
             }
         }
 
