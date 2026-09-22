@@ -193,7 +193,7 @@
                     </div>
 
                     <h1 class="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
-                        Construa uma carreira que renda até <span class="gold-gradient-text italic font-normal">R$ 8.000/mês</span> como Nail Designer.
+                        Construa uma carreira que renda mais que <span class="gold-gradient-text italic font-normal">R$ 8.000/mês</span> como Nail Designer.
                     </h1>
 
                     <p class="text-nude-200 text-base sm:text-lg max-w-2xl mx-auto lg:mx-0 leading-relaxed">
@@ -1013,7 +1013,7 @@
                         <i id="faq6-icon" class="fa-solid fa-chevron-down text-gold-500 transition-transform"></i>
                     </button>
                     <div id="faq6" class="hidden px-6 pb-5 text-xs sm:text-sm text-charcoal/70 leading-relaxed border-t border-nude-100 pt-3">
-                        Para reservar seu horário é pedido um sinal de 30% do valor do serviço. Se não puder comparecer, você pode reagendar em até duas semanas sem custo adicional. A partir da 3ª ausência, será cobrado 80% do valor do serviço em uma nova data de sua escolha.
+                        Para reservar seu horário é pedido um sinal fixo de <strong>R$ 30,00</strong>. Se você não puder comparecer, seu sinal fica guardado: no seu próximo agendamento não será cobrado sinal novamente, então não se preocupa que o dinheiro não se perde.
                     </div>
                 </div>
 
@@ -1245,19 +1245,69 @@
         </div>
     </div>
 
-    <!-- Modal: Agendamento Real (checa disponibilidade via Google Apps Script) -->
-    <div id="agendamentoModal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <!-- Modal 1: Visualizador de Agenda (dias + horários 7h-20h) -->
+    <div id="agendaViewerModal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-4 relative border border-gold-300 max-h-[90vh] overflow-y-auto">
+            <button onclick="document.getElementById('agendaViewerModal').classList.add('hidden')" class="absolute top-4 right-4 text-charcoal/50 text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="space-y-1">
+                <span class="text-[10px] uppercase tracking-widest font-bold text-gold-600 bg-gold-100 px-2.5 py-1 rounded-full">Escolha o horário</span>
+                <h3 class="font-serif text-2xl font-bold text-charcoal" id="agendaViewerServico">Agenda</h3>
+                <p class="text-[11px] text-charcoal/60">Sinal fixo de R$ 30,00 para garantir o horário. Chegue 20 minutos antes.</p>
+            </div>
+
+            <div id="agendaSugestao" class="hidden bg-gold-50 border border-gold-300 rounded-xl p-3 text-xs text-gold-800"></div>
+
+            <div id="agendaDiasTabs" class="flex gap-2 overflow-x-auto pb-1"></div>
+            <div id="agendaSlotsGrid" class="grid grid-cols-3 gap-2"></div>
+            <p class="text-[10px] text-charcoal/40 text-center">Verde = disponível · Cinza = ocupado</p>
+        </div>
+    </div>
+
+    <!-- Modal 2: Você já é cliente? -->
+    <div id="clienteCheckModal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-md w-full p-8 space-y-4 relative border border-gold-300">
+            <button onclick="document.getElementById('clienteCheckModal').classList.add('hidden')" class="absolute top-4 right-4 text-charcoal/50 text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="font-serif text-2xl font-bold text-charcoal">Você já é cliente do Studio 14?</h3>
+            <p id="clienteCheckResumo" class="text-xs text-charcoal/60"></p>
+
+            <div id="clienteCheckOpcoes" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button onclick="escolherJaCliente(true)" class="py-3.5 rounded-full border-2 border-charcoal text-charcoal text-xs font-bold uppercase tracking-wider hover:bg-charcoal hover:text-white transition-all">
+                    Sim, já sou cliente
+                </button>
+                <button onclick="escolherJaCliente(false)" class="py-3.5 rounded-full gold-gradient-bg text-charcoal text-xs font-bold uppercase tracking-wider">
+                    É minha primeira vez
+                </button>
+            </div>
+
+            <div id="clienteCheckBuscaCpf" class="hidden space-y-3">
+                <input type="text" id="checkCpfInput" placeholder="Digite seu CPF" maxlength="14" class="w-full px-4 py-3 rounded-xl border border-nude-300 text-sm">
+                <button onclick="buscarClientePorCpf()" class="w-full py-3 rounded-full border-2 border-charcoal text-charcoal text-xs font-bold uppercase tracking-wider">
+                    Buscar meu cadastro
+                </button>
+                <p id="checkCpfMsg" class="text-xs"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 3: Agendamento (checa disponibilidade via Google Apps Script) -->
+    <div id="agendamentoModal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-8 space-y-4 relative border border-gold-300 max-h-[90vh] overflow-y-auto">
             <button onclick="document.getElementById('agendamentoModal').classList.add('hidden')" class="absolute top-4 right-4 text-charcoal/50 text-xl">
                 <i class="fa-solid fa-xmark"></i>
             </button>
             <h3 class="font-serif text-2xl font-bold text-charcoal" id="agendamentoServico">Agendar Serviço</h3>
-            <p class="text-[11px] text-charcoal/60">Sinal de 30% para garantir o horário. Reagendamento gratuito em até 2 semanas.</p>
+            <div id="agResumoData" class="bg-nude-50 border border-nude-200 rounded-xl p-3 text-xs font-bold text-charcoal"></div>
+            <p class="text-[11px] text-charcoal/60">Sinal fixo de R$ 30,00 para garantir o horário. Chegue 20 minutos antes do horário marcado.</p>
 
             <input type="text" id="agNome" placeholder="Seu nome completo" class="w-full px-4 py-3 rounded-xl border border-nude-300 text-sm">
+            <input type="text" id="agCpf" placeholder="CPF" maxlength="14" class="w-full px-4 py-3 rounded-xl border border-nude-300 text-sm">
             <input type="tel" id="agTelefone" placeholder="WhatsApp com DDD" class="w-full px-4 py-3 rounded-xl border border-nude-300 text-sm">
-            <input type="date" id="agData" class="w-full px-4 py-3 rounded-xl border border-nude-300 text-sm">
-            <select id="agHora" class="w-full px-4 py-3 rounded-xl border border-nude-300 text-sm bg-white"></select>
+            <input type="email" id="agEmail" placeholder="E-mail (opcional)" class="w-full px-4 py-3 rounded-xl border border-nude-300 text-sm">
+            <textarea id="agObservacao" rows="2" placeholder="Observação (opcional): alergias, preferências, etc." class="w-full px-4 py-3 rounded-xl border border-nude-300 text-sm"></textarea>
 
             <div id="agMensagem" class="text-xs"></div>
 
@@ -1349,7 +1399,7 @@
         // ============================================================
         // Checagem de Região — Cuiabá / Várzea Grande
         // ============================================================
-        const CIDADES_PERMITIDAS = ['cuiaba', 'cuiabá', 'varzea grande', 'várzea grande'];
+        const CIDADES_PERMITIDAS = ['cuiaba', 'cuiabá', 'varzea grande', 'várzea grande', 'recife'];
 
         function normalizar(txt) {
             return txt.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -1404,61 +1454,181 @@
         // Agendamento real com checagem de conflito (Google Apps Script)
         // TROQUE pela URL do seu deployment do Apps Script
         // ============================================================
-        const WEBAPP_URL = 'COLE_AQUI_A_URL_DO_APPS_SCRIPT';
+        const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbwnaBbf6ycOQghfHPQ7y6LnpmGft_7NolbJya97qTaN2Wvau-SKWHi793sBxoW5vPh01g/exec';
         let servicoAtual = '';
         let valorAtual = 0;
+        let dataAtual = '';
+        let horaAtual = '';
 
-        function popularHorarios() {
-            const select = document.getElementById('agHora');
-            select.innerHTML = '';
-            for (let h = 9; h < 19; h++) {
-                ['00', '30'].forEach(m => {
-                    const opt = document.createElement('option');
-                    opt.value = `${String(h).padStart(2,'0')}:${m}`;
-                    opt.textContent = `${String(h).padStart(2,'0')}:${m}`;
-                    select.appendChild(opt);
-                });
-            }
+        function formatarDataBR(iso) {
+            const [ano, mes, dia] = iso.split('-');
+            return `${dia}/${mes}/${ano}`;
         }
 
-        // Botão de Agendar (Serviços) — checa região, depois abre o modal de agendamento
+        // ---------- Passo 1: Visualizador de Agenda ----------
+        // Botão de Agendar (Serviços) — checa região, depois abre o visualizador de agenda
         function openBookingModal(serviceName, valor) {
             verificarRegiaoEExecutar(() => {
                 servicoAtual = serviceName;
                 valorAtual = valor;
-                document.getElementById('agendamentoServico').textContent = `Agendar: ${serviceName}`;
-                popularHorarios();
-                document.getElementById('agMensagem').innerHTML = '';
-                document.getElementById('agendamentoModal').classList.remove('hidden');
+                document.getElementById('agendaViewerServico').textContent = `Agenda: ${serviceName}`;
+                document.getElementById('agendaViewerModal').classList.remove('hidden');
+                carregarAgenda();
             });
+        }
+
+        let diasCache = [];
+
+        async function carregarAgenda() {
+            const tabsEl = document.getElementById('agendaDiasTabs');
+            const gridEl = document.getElementById('agendaSlotsGrid');
+            tabsEl.innerHTML = '<p class="text-xs text-charcoal/50">Carregando agenda...</p>';
+            gridEl.innerHTML = '';
+            try {
+                const resp = await fetch(`${WEBAPP_URL}?action=disponibilidade&servico=${encodeURIComponent(servicoAtual)}`);
+                const resultado = await resp.json();
+                if (!resultado.ok) {
+                    tabsEl.innerHTML = `<p class="text-xs text-red-600">${resultado.erro}</p>`;
+                    return;
+                }
+                diasCache = resultado.dias;
+
+                const sugestaoEl = document.getElementById('agendaSugestao');
+                if (resultado.sugestao) {
+                    sugestaoEl.classList.remove('hidden');
+                    sugestaoEl.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Horário mais próximo disponível: <strong>${formatarDataBR(resultado.sugestao.data)} às ${resultado.sugestao.hora}</strong>.
+                        <button onclick="selecionarHorario('${resultado.sugestao.data}','${resultado.sugestao.hora}')" class="underline font-bold ml-1">Usar este horário</button>`;
+                } else {
+                    sugestaoEl.classList.add('hidden');
+                }
+
+                renderizarDiasTabs();
+                renderizarSlots(diasCache[0].data);
+            } catch (e) {
+                tabsEl.innerHTML = '<p class="text-xs text-red-600">Erro ao carregar a agenda. Tente novamente.</p>';
+            }
+        }
+
+        function renderizarDiasTabs() {
+            const tabsEl = document.getElementById('agendaDiasTabs');
+            tabsEl.innerHTML = diasCache.map((dia, i) => {
+                const [ano, mes, dia2] = dia.data.split('-');
+                const livres = dia.slots.filter(s => s.livre).length;
+                return `<button onclick="renderizarSlots('${dia.data}')" data-idx="${i}"
+                    class="dia-tab flex-shrink-0 px-3 py-2 rounded-xl text-xs font-bold border ${i === 0 ? 'bg-charcoal text-white border-charcoal' : 'border-nude-300 text-charcoal'}">
+                    ${dia2}/${mes}<br><span class="text-[10px] font-normal">${livres} livres</span>
+                </button>`;
+            }).join('');
+        }
+
+        function renderizarSlots(dataStr) {
+            document.querySelectorAll('.dia-tab').forEach(btn => {
+                const ativo = btn.getAttribute('onclick').includes(`'${dataStr}'`);
+                btn.className = 'dia-tab flex-shrink-0 px-3 py-2 rounded-xl text-xs font-bold border ' + (ativo ? 'bg-charcoal text-white border-charcoal' : 'border-nude-300 text-charcoal');
+            });
+            const dia = diasCache.find(d => d.data === dataStr);
+            const gridEl = document.getElementById('agendaSlotsGrid');
+            if (!dia) { gridEl.innerHTML = ''; return; }
+            gridEl.innerHTML = dia.slots.map(s => {
+                if (s.livre) {
+                    return `<button onclick="selecionarHorario('${dataStr}','${s.hora}')" class="py-2.5 rounded-lg bg-green-50 border border-green-400 text-green-700 text-xs font-bold hover:bg-green-100">${s.hora}</button>`;
+                }
+                return `<button disabled class="py-2.5 rounded-lg bg-nude-100 border border-nude-200 text-charcoal/30 text-xs font-bold cursor-not-allowed">${s.hora}</button>`;
+            }).join('');
+        }
+
+        // ---------- Passo 2: horário escolhido -> pergunta se já é cliente ----------
+        function selecionarHorario(data, hora) {
+            dataAtual = data;
+            horaAtual = hora;
+            document.getElementById('agendaViewerModal').classList.add('hidden');
+
+            document.getElementById('clienteCheckResumo').textContent =
+                `${servicoAtual} — ${formatarDataBR(data)} às ${hora}`;
+            document.getElementById('clienteCheckOpcoes').classList.remove('hidden');
+            document.getElementById('clienteCheckBuscaCpf').classList.add('hidden');
+            document.getElementById('checkCpfInput').value = '';
+            document.getElementById('checkCpfMsg').innerHTML = '';
+            document.getElementById('clienteCheckModal').classList.remove('hidden');
+        }
+
+        function escolherJaCliente(jaECliente) {
+            if (jaECliente) {
+                document.getElementById('clienteCheckOpcoes').classList.add('hidden');
+                document.getElementById('clienteCheckBuscaCpf').classList.remove('hidden');
+            } else {
+                document.getElementById('clienteCheckModal').classList.add('hidden');
+                abrirFormularioAgendamento({});
+            }
+        }
+
+        async function buscarClientePorCpf() {
+            const cpf = document.getElementById('checkCpfInput').value;
+            const msgEl = document.getElementById('checkCpfMsg');
+            msgEl.innerHTML = '<span class="text-charcoal/60">Buscando...</span>';
+            try {
+                const resp = await fetch(`${WEBAPP_URL}?action=buscarCliente&cpf=${encodeURIComponent(cpf)}`);
+                const resultado = await resp.json();
+                if (resultado.ok && resultado.encontrado) {
+                    document.getElementById('clienteCheckModal').classList.add('hidden');
+                    abrirFormularioAgendamento({ cpf: cpf, ...resultado.cliente });
+                } else {
+                    msgEl.innerHTML = '<span class="text-red-600">CPF não encontrado. Vamos criar seu cadastro agora.</span>';
+                    setTimeout(() => {
+                        document.getElementById('clienteCheckModal').classList.add('hidden');
+                        abrirFormularioAgendamento({ cpf: cpf });
+                    }, 1500);
+                }
+            } catch (e) {
+                msgEl.innerHTML = '<span class="text-red-600">Erro ao buscar. Tente novamente.</span>';
+            }
+        }
+
+        // ---------- Passo 3: formulário final ----------
+        function abrirFormularioAgendamento(cliente) {
+            document.getElementById('agendamentoServico').textContent = `Agendar: ${servicoAtual}`;
+            document.getElementById('agResumoData').textContent = `${formatarDataBR(dataAtual)} às ${horaAtual}`;
+            document.getElementById('agNome').value = cliente.nome || '';
+            document.getElementById('agCpf').value = cliente.cpf || '';
+            document.getElementById('agTelefone').value = cliente.telefone || '';
+            document.getElementById('agEmail').value = cliente.email || '';
+            document.getElementById('agObservacao').value = '';
+            document.getElementById('agMensagem').innerHTML = '';
+            document.getElementById('agendamentoModal').classList.remove('hidden');
         }
 
         async function confirmarAgendamento() {
             const nome = document.getElementById('agNome').value;
+            const cpf = document.getElementById('agCpf').value;
             const telefone = document.getElementById('agTelefone').value;
-            const data = document.getElementById('agData').value;
-            const hora = document.getElementById('agHora').value;
+            const email = document.getElementById('agEmail').value;
+            const observacao = document.getElementById('agObservacao').value;
             const msgEl = document.getElementById('agMensagem');
 
-            if (!nome || !telefone || !data) {
-                msgEl.innerHTML = '<span class="text-red-600">Preencha todos os campos.</span>';
+            if (!nome || !cpf || !telefone) {
+                msgEl.innerHTML = '<span class="text-red-600">Preencha nome, CPF e WhatsApp.</span>';
                 return;
             }
 
-            msgEl.innerHTML = '<span class="text-charcoal/60">Verificando disponibilidade...</span>';
+            msgEl.innerHTML = '<span class="text-charcoal/60">Confirmando agendamento...</span>';
 
             try {
                 const resp = await fetch(WEBAPP_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita preflight CORS
-                    body: JSON.stringify({ nome, telefone, servico: servicoAtual, valor: valorAtual, data, hora })
+                    body: JSON.stringify({
+                        action: 'criarAgendamento',
+                        nome, cpf, telefone, email, observacao,
+                        servico: servicoAtual, valorServico: valorAtual,
+                        data: dataAtual, hora: horaAtual
+                    })
                 });
                 const resultado = await resp.json();
 
                 if (resultado.ok) {
                     msgEl.innerHTML = `<span class="text-green-600 font-bold">${resultado.mensagem}</span>`;
                 } else if (resultado.erro === 'conflito') {
-                    msgEl.innerHTML = `<span class="text-red-600">Horário ocupado. Livres: ${resultado.sugestoes.join(', ')}</span>`;
+                    msgEl.innerHTML = `<span class="text-red-600">Esse horário acabou de ser ocupado. Escolha outro na agenda.</span>`;
                 } else {
                     msgEl.innerHTML = `<span class="text-red-600">${resultado.mensagem || resultado.erro}</span>`;
                 }
