@@ -17,7 +17,7 @@ tailwind.config = { theme: { extend: {
 <style>
   .ledger-num{ font-family:'JetBrains Mono',monospace; font-variant-numeric: tabular-nums; }
   .tab-active{ background:#1A1817; color:#F3DB9A; }
-  .badge{ font-size:10px; font-weight:700; text-transform:uppercase; padding:2px 8px; border-radius:9999px; }
+  .badge{ font-size:11px; font-weight:700; text-transform:uppercase; padding:2px 8px; border-radius:9999px; }
   ::-webkit-scrollbar{ height:6px; width:6px; } ::-webkit-scrollbar-thumb{ background:#D4AF37; border-radius:4px; }
 </style>
 </head>
@@ -49,7 +49,7 @@ tailwind.config = { theme: { extend: {
     } catch (e) {}
     el.innerHTML = `Painel (admin): v${VERSAO_ADMIN}<br>Site público (index): v${VERSAO_INDEX_PUBLICO}<br>Backend (Apps Script): v${versaoBackend}`;
   }
-  mostrarVersoes();
+  document.addEventListener('DOMContentLoaded', mostrarVersoes);
 </script>
 
 <!-- ===== TELA DE LOGIN (usuário/senha reais, via Apps Script) ===== -->
@@ -57,12 +57,12 @@ tailwind.config = { theme: { extend: {
   <div class="max-w-sm w-full bg-white rounded-3xl p-8 space-y-5 text-center">
     <div class="w-14 h-14 mx-auto rounded-full bg-charcoal text-gold-400 flex items-center justify-center font-serif text-xl font-bold border border-gold-500/40">14</div>
     <h1 class="font-serif text-2xl font-bold">Painel Interno · Studio 14</h1>
-    <p class="text-xs text-charcoal/60">Acesso restrito à equipe.</p>
+    <p class="text-sm text-charcoal/60">Acesso restrito à equipe.</p>
     <input id="loginUsuario" type="text" placeholder="Usuário" class="w-full px-4 py-3 rounded-xl border border-nude-200 text-sm text-center">
     <input id="loginSenha" type="password" placeholder="Senha" class="w-full px-4 py-3 rounded-xl border border-nude-200 text-sm text-center">
-    <button onclick="fazerLogin()" class="w-full py-3 rounded-full bg-charcoal text-gold-300 text-xs font-bold uppercase tracking-wider">Entrar</button>
-    <p id="loginErro" class="text-xs text-warn hidden"></p>
-    <div id="versoesInfo" class="pt-3 border-t border-nude-100 text-[10px] text-charcoal/40 leading-relaxed"></div>
+    <button onclick="fazerLogin()" class="w-full py-3 rounded-full bg-charcoal text-gold-300 text-sm font-bold uppercase tracking-wider">Entrar</button>
+    <p id="loginErro" class="text-sm text-warn hidden"></p>
+    <div id="versoesInfo" class="pt-3 border-t border-nude-100 text-xs text-charcoal/40 leading-relaxed"></div>
   </div>
 </div>
 
@@ -76,7 +76,7 @@ tailwind.config = { theme: { extend: {
         <div class="w-9 h-9 rounded-full bg-gold-500 text-charcoal flex items-center justify-center font-serif font-bold">14</div>
         <span class="font-serif text-lg font-bold tracking-wide">Painel Interno</span>
       </div>
-      <div class="flex items-center gap-4 text-xs text-nude-300">
+      <div class="flex items-center gap-4 text-sm text-nude-300">
         <span id="usuarioLogado"></span>
         <button onclick="fazerLogout()" class="text-gold-400 hover:text-gold-300"><i class="fa-solid fa-arrow-right-from-bracket mr-1"></i>Sair</button>
       </div>
@@ -85,14 +85,14 @@ tailwind.config = { theme: { extend: {
 
   <!-- Abas -->
   <nav class="max-w-7xl mx-auto px-6 mt-6 flex gap-2 overflow-x-auto pb-2">
-    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap" data-tab="agendamentos" data-perm="agendamentos">Agendamentos</button>
-    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap" data-tab="atendimentos" data-perm="atendimentos">Atendimentos</button>
-    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap" data-tab="clientes" data-perm="clientes">Clientes</button>
-    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap" data-tab="retorno" data-perm="retorno">Retorno / Sem Sinal</button>
-    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap" data-tab="servicos" data-perm="servicos">Serviços</button>
-    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap" data-tab="profissionais" data-perm="profissionais">Profissionais</button>
-    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap admin-only hidden" data-tab="mesas">Mesas</button>
-    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap admin-only hidden" data-tab="usuarios">Usuários</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap" data-tab="agendamentos" data-perm="agendamentos">Agendamentos</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap" data-tab="atendimentos" data-perm="atendimentos">Atendimentos</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap" data-tab="clientes" data-perm="clientes">Clientes</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap" data-tab="retorno" data-perm="retorno">Retorno / Sem Sinal</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap" data-tab="servicos" data-perm="servicos">Serviços</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap" data-tab="profissionais" data-perm="profissionais">Profissionais</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap admin-only hidden" data-tab="mesas">Mesas</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap admin-only hidden" data-tab="usuarios">Usuários</button>
   </nav>
 
   <main class="max-w-7xl mx-auto px-6 pb-16 mt-4 space-y-6">
@@ -101,7 +101,7 @@ tailwind.config = { theme: { extend: {
     <div class="tab-content" id="tab-agendamentos">
       <div class="flex items-center justify-between mb-3">
         <h2 class="font-serif text-xl font-bold">Agendamentos</h2>
-        <select id="filtroStatusAg" onchange="carregarAgendamentos()" class="text-xs border border-nude-300 rounded-lg px-2 py-1.5">
+        <select id="filtroStatusAg" onchange="carregarAgendamentos()" class="text-sm border border-nude-300 rounded-lg px-2 py-1.5">
           <option value="">Todos os status</option>
           <option value="Iniciado">Iniciado</option>
           <option value="Concluido">Concluído (sinal pago)</option>
@@ -110,10 +110,11 @@ tailwind.config = { theme: { extend: {
           <option value="Reutilizado">Reutilizado</option>
           <option value="Arquivado">Arquivado</option>
         </select>
+        <button onclick="zerarAgendamentosAdmin()" class="admin-only hidden text-sm font-bold bg-warn text-white px-3 py-1.5 rounded-lg"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Zerar Agendamentos</button>
       </div>
       <div class="bg-white rounded-2xl border border-nude-200 overflow-x-auto">
-        <table class="w-full text-xs">
-          <thead class="bg-nude-100 text-charcoal/60 uppercase tracking-wider text-[10px]">
+        <table class="w-full text-sm">
+          <thead class="bg-nude-100 text-charcoal/60 uppercase tracking-wider text-xs">
             <tr>
               <th class="p-3 text-left">Data</th><th class="p-3 text-left">Hora</th><th class="p-3 text-left">Mesa</th>
               <th class="p-3 text-left">Cliente</th><th class="p-3 text-left">Serviço</th><th class="p-3 text-left">Valor</th>
@@ -129,8 +130,8 @@ tailwind.config = { theme: { extend: {
     <div class="tab-content hidden" id="tab-atendimentos">
       <h2 class="font-serif text-xl font-bold mb-3">Atendimentos (mesa / profissional)</h2>
       <div class="bg-white rounded-2xl border border-nude-200 overflow-x-auto">
-        <table class="w-full text-xs">
-          <thead class="bg-nude-100 text-charcoal/60 uppercase tracking-wider text-[10px]">
+        <table class="w-full text-sm">
+          <thead class="bg-nude-100 text-charcoal/60 uppercase tracking-wider text-xs">
             <tr>
               <th class="p-3 text-left">Início</th><th class="p-3 text-left">Cliente</th><th class="p-3 text-left">Serviço</th>
               <th class="p-3 text-left">Profissional</th><th class="p-3 text-left">Valor</th><th class="p-3 text-left">Status</th><th class="p-3 text-left">Ações</th>
@@ -143,12 +144,14 @@ tailwind.config = { theme: { extend: {
 
     <!-- Clientes -->
     <div class="tab-content hidden" id="tab-clientes">
-      <div class="flex items-center gap-3 mb-3">
+      <div class="flex items-center gap-3 mb-3 flex-wrap">
         <h2 class="font-serif text-xl font-bold">Clientes</h2>
-        <input id="buscaClienteCpf" placeholder="Buscar por CPF" class="text-xs border border-nude-300 rounded-lg px-3 py-1.5">
-        <button onclick="buscarClienteAdmin()" class="text-xs font-bold bg-charcoal text-white px-3 py-1.5 rounded-lg">Buscar</button>
+        <input id="buscaClienteCpf" placeholder="Buscar por CPF" class="text-sm border border-nude-300 rounded-lg px-3 py-1.5">
+        <button onclick="buscarClienteAdmin()" class="text-sm font-bold bg-charcoal text-white px-3 py-1.5 rounded-lg">Buscar</button>
+        <button onclick="carregarClientes()" class="text-sm font-bold border border-nude-300 text-charcoal px-3 py-1.5 rounded-lg">Ver todos</button>
       </div>
-      <div id="clienteResultado" class="bg-white rounded-2xl border border-nude-200 p-4 text-xs"></div>
+      <div id="clienteResultado" class="bg-white rounded-2xl border border-nude-200 p-4 text-sm mb-4"></div>
+      <div id="listaClientes" class="bg-white rounded-2xl border border-nude-200 divide-y divide-nude-100"></div>
     </div>
 
     <!-- Retorno / Sem sinal -->
@@ -169,11 +172,11 @@ tailwind.config = { theme: { extend: {
     <div class="tab-content hidden" id="tab-servicos">
       <h2 class="font-serif text-xl font-bold mb-3">Serviços</h2>
       <div class="grid md:grid-cols-3 gap-2 mb-4 bg-white rounded-2xl border border-nude-200 p-4">
-        <input id="novoServicoNome" placeholder="Nome do serviço" class="text-xs border border-nude-300 rounded-lg px-3 py-2">
-        <input id="novoServicoCategoria" placeholder="Categoria" class="text-xs border border-nude-300 rounded-lg px-3 py-2">
-        <input id="novoServicoValor" type="number" placeholder="Valor (R$)" class="text-xs border border-nude-300 rounded-lg px-3 py-2">
-        <input id="novoServicoDuracao" type="number" placeholder="Duração (min)" class="text-xs border border-nude-300 rounded-lg px-3 py-2">
-        <button onclick="cadastrarServico()" class="text-xs font-bold bg-charcoal text-white px-3 py-2 rounded-lg md:col-span-2">Cadastrar Serviço</button>
+        <input id="novoServicoNome" placeholder="Nome do serviço" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <input id="novoServicoCategoria" placeholder="Categoria" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <input id="novoServicoValor" type="number" placeholder="Valor (R$)" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <input id="novoServicoDuracao" type="number" placeholder="Duração (min)" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <button onclick="cadastrarServico()" class="text-sm font-bold bg-charcoal text-white px-3 py-2 rounded-lg md:col-span-2">Cadastrar Serviço</button>
       </div>
       <div id="listaServicos" class="bg-white rounded-2xl border border-nude-200 divide-y divide-nude-100"></div>
     </div>
@@ -182,10 +185,10 @@ tailwind.config = { theme: { extend: {
     <div class="tab-content hidden" id="tab-profissionais">
       <h2 class="font-serif text-xl font-bold mb-3">Profissionais (Nail Designers)</h2>
       <div class="grid md:grid-cols-3 gap-2 mb-4 bg-white rounded-2xl border border-nude-200 p-4">
-        <input id="novoProfNome" placeholder="Nome" class="text-xs border border-nude-300 rounded-lg px-3 py-2">
-        <input id="novoProfEspecialidades" placeholder="Especialidades" class="text-xs border border-nude-300 rounded-lg px-3 py-2">
-        <input id="novoProfComissao" type="number" placeholder="Comissão %" class="text-xs border border-nude-300 rounded-lg px-3 py-2">
-        <button onclick="cadastrarProfissional()" class="text-xs font-bold bg-charcoal text-white px-3 py-2 rounded-lg md:col-span-3">Cadastrar Profissional</button>
+        <input id="novoProfNome" placeholder="Nome" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <input id="novoProfEspecialidades" placeholder="Especialidades" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <input id="novoProfComissao" type="number" placeholder="Comissão %" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <button onclick="cadastrarProfissional()" class="text-sm font-bold bg-charcoal text-white px-3 py-2 rounded-lg md:col-span-3">Cadastrar Profissional</button>
       </div>
       <div id="listaProfissionais" class="bg-white rounded-2xl border border-nude-200 divide-y divide-nude-100"></div>
     </div>
@@ -194,11 +197,11 @@ tailwind.config = { theme: { extend: {
     <div class="tab-content hidden" id="tab-mesas">
       <h2 class="font-serif text-xl font-bold mb-3">Mesas de atendimento</h2>
       <div class="grid md:grid-cols-3 gap-2 mb-4 bg-white rounded-2xl border border-nude-200 p-4">
-        <input id="novaMesaNome" placeholder="Nome da mesa (ex: Mesa 3)" class="text-xs border border-nude-300 rounded-lg px-3 py-2">
-        <input id="novaMesaServicos" placeholder="Serviços habilitados (separados por vírgula)" class="text-xs border border-nude-300 rounded-lg px-3 py-2 md:col-span-2">
-        <button onclick="cadastrarMesa()" class="text-xs font-bold bg-charcoal text-white px-3 py-2 rounded-lg md:col-span-3">Cadastrar Mesa</button>
+        <input id="novaMesaNome" placeholder="Nome da mesa (ex: Mesa 3)" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <input id="novaMesaServicos" placeholder="Serviços habilitados (separados por vírgula)" class="text-sm border border-nude-300 rounded-lg px-3 py-2 md:col-span-2">
+        <button onclick="cadastrarMesa()" class="text-sm font-bold bg-charcoal text-white px-3 py-2 rounded-lg md:col-span-3">Cadastrar Mesa</button>
       </div>
-      <p class="text-[10px] text-charcoal/40 mb-2">Os nomes dos serviços precisam ser IDÊNTICOS aos cadastrados na aba Serviços (copie e cole).</p>
+      <p class="text-xs text-charcoal/40 mb-2">Os nomes dos serviços precisam ser IDÊNTICOS aos cadastrados na aba Serviços (copie e cole).</p>
       <div id="listaMesas" class="bg-white rounded-2xl border border-nude-200 divide-y divide-nude-100"></div>
     </div>
 
@@ -206,18 +209,21 @@ tailwind.config = { theme: { extend: {
     <div class="tab-content hidden" id="tab-usuarios">
       <h2 class="font-serif text-xl font-bold mb-3">Usuários do sistema</h2>
       <div class="grid md:grid-cols-3 gap-2 mb-4 bg-white rounded-2xl border border-nude-200 p-4">
-        <input id="novoUsuLogin" placeholder="Login" class="text-xs border border-nude-300 rounded-lg px-3 py-2">
-        <input id="novoUsuSenha" type="password" placeholder="Senha" class="text-xs border border-nude-300 rounded-lg px-3 py-2">
-        <input id="novoUsuNome" placeholder="Nome" class="text-xs border border-nude-300 rounded-lg px-3 py-2">
-        <select id="novoUsuPapel" onchange="toggleProfissionalSelect()" class="text-xs border border-nude-300 rounded-lg px-3 py-2">
+        <input id="novoUsuLogin" placeholder="Login" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <input id="novoUsuSenha" type="password" placeholder="Senha" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <input id="novoUsuNome" placeholder="Nome" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <select id="novoUsuPapel" onchange="toggleProfissionalSelect()" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
           <option value="Admin">Admin</option>
           <option value="NailDesigner">Nail Designer</option>
         </select>
-        <select id="novoUsuProfissional" class="text-xs border border-nude-300 rounded-lg px-3 py-2 hidden"></select>
-        <input id="novoUsuPermissoes" placeholder="Permissões (ex: agendamentos,atendimentos,clientes)" value="agendamentos,atendimentos,clientes" class="text-xs border border-nude-300 rounded-lg px-3 py-2 md:col-span-2">
-        <button onclick="cadastrarUsuario()" class="text-xs font-bold bg-charcoal text-white px-3 py-2 rounded-lg">Cadastrar Usuário</button>
+        <select id="novoUsuProfissional" class="text-sm border border-nude-300 rounded-lg px-3 py-2 hidden"></select>
+        <input id="novoUsuPermissoes" placeholder="Permissões (ex: agendamentos,atendimentos,clientes)" value="agendamentos,atendimentos,clientes" class="text-sm border border-nude-300 rounded-lg px-3 py-2 md:col-span-2">
+        <input id="novoUsuCpf" placeholder="CPF (opcional)" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <input id="novoUsuEmail" type="email" placeholder="E-mail (opcional)" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <input id="novoUsuFoto" type="file" accept="image/*" class="text-sm border border-nude-300 rounded-lg px-3 py-2 bg-white">
+        <button onclick="cadastrarUsuario()" class="text-sm font-bold bg-charcoal text-white px-3 py-2 rounded-lg md:col-span-3">Cadastrar Usuário</button>
       </div>
-      <p class="text-[10px] text-charcoal/40 mb-2">Abas disponíveis para permissão: agendamentos, atendimentos, clientes, retorno, servicos, profissionais. Admin sempre vê tudo.</p>
+      <p class="text-xs text-charcoal/40 mb-2">Abas disponíveis para permissão: agendamentos, atendimentos, clientes, retorno, servicos, profissionais. Admin sempre vê tudo.</p>
       <div id="listaUsuarios" class="bg-white rounded-2xl border border-nude-200 divide-y divide-nude-100"></div>
     </div>
 
@@ -315,6 +321,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 function carregarAbaAtual(tab){
   if (tab === 'agendamentos') carregarAgendamentos();
   if (tab === 'atendimentos') carregarAtendimentos();
+  if (tab === 'clientes') carregarClientes();
   if (tab === 'retorno') carregarRetorno();
   if (tab === 'servicos') carregarServicos();
   if (tab === 'profissionais') carregarProfissionais();
@@ -357,14 +364,22 @@ async function carregarAgendamentos(){
       <td class="p-3 ledger-num">${a.data}</td><td class="p-3 ledger-num">${a.hora}</td><td class="p-3">${a.mesa}</td>
       <td class="p-3">${a.nome}<br><span class="text-charcoal/40">${a.telefone}</span></td>
       <td class="p-3">${a.servico}</td><td class="p-3 ledger-num">${fmt(a.valorServico)}</td>
-      <td class="p-3">${fmt(a.sinal)}<br><span class="text-[10px] text-charcoal/40">${a.sinalStatus}</span></td>
+      <td class="p-3">${fmt(a.sinal)}<br><span class="text-xs text-charcoal/40">${a.sinalStatus}</span></td>
       <td class="p-3"><span class="badge ${corStatus[a.status]||''}">${a.status}</span></td>
       <td class="p-3 space-y-1">
-        ${a.status === 'Iniciado' || a.status === 'Concluido' ? `<button onclick="iniciarAtendimento('${a.id}')" class="block text-[10px] font-bold bg-charcoal text-white px-2 py-1 rounded">Iniciar Atendimento</button>` : ''}
-        ${a.status !== 'Cancelado' && a.status !== 'Reutilizado' && a.status !== 'Atendido' && a.status !== 'Arquivado' ? `<button onclick="marcarStatusAg('${a.id}','Cancelado')" class="block text-[10px] font-bold bg-warn text-white px-2 py-1 rounded">Não Compareceu</button>` : ''}
-        ${a.status !== 'Arquivado' ? `<button onclick="marcarStatusAg('${a.id}','Arquivado')" class="block text-[10px] font-bold bg-nude-200 text-charcoal/70 px-2 py-1 rounded"><i class="fa-solid fa-box-archive mr-1"></i>Arquivar</button>` : ''}
+        ${a.status === 'Iniciado' || a.status === 'Concluido' ? `<button onclick="iniciarAtendimento('${a.id}')" class="block text-xs font-bold bg-charcoal text-white px-2 py-1 rounded">Iniciar Atendimento</button>` : ''}
+        ${a.status !== 'Cancelado' && a.status !== 'Reutilizado' && a.status !== 'Atendido' && a.status !== 'Arquivado' ? `<button onclick="marcarStatusAg('${a.id}','Cancelado')" class="block text-xs font-bold bg-warn text-white px-2 py-1 rounded">Não Compareceu</button>` : ''}
+        ${a.status !== 'Arquivado' ? `<button onclick="marcarStatusAg('${a.id}','Arquivado')" class="block text-xs font-bold bg-nude-200 text-charcoal/70 px-2 py-1 rounded"><i class="fa-solid fa-box-archive mr-1"></i>Arquivar</button>` : ''}
       </td>
     </tr>`).join('');
+}
+
+async function zerarAgendamentosAdmin(){
+  if (!confirm('ATENÇÃO: isso vai apagar TODOS os agendamentos da planilha (não afeta clientes já cadastrados). Essa ação não pode ser desfeita. Continuar?')) return;
+  if (!confirm('Confirme mais uma vez: apagar TODOS os agendamentos agora?')) return;
+  const r = await apiPost('zerarAgendamentos', {});
+  alert(r.ok ? r.mensagem : ('Erro: ' + r.erro));
+  carregarAgendamentos();
 }
 
 async function iniciarAtendimento(agendamentoId){
@@ -401,8 +416,22 @@ async function carregarAtendimentos(){
       <td class="p-3">${a.nomeCliente}</td><td class="p-3">${a.servico}</td><td class="p-3">${a.profissionalNome}</td>
       <td class="p-3 ledger-num">${fmt(a.valorServico)}</td>
       <td class="p-3"><span class="badge ${a.status==='Concluído'?'bg-green-100 text-green-700':'bg-amber-100 text-amber-700'}">${a.status}</span></td>
-      <td class="p-3">${a.status !== 'Concluído' ? `<button onclick="finalizarAtendimento('${a.id}')" class="text-[10px] font-bold bg-charcoal text-white px-2 py-1 rounded">Finalizar</button>` : ''}</td>
+      <td class="p-3 space-y-1">
+        ${a.status !== 'Concluído' ? `<button onclick="finalizarAtendimento('${a.id}')" class="block text-xs font-bold bg-charcoal text-white px-2 py-1 rounded">Finalizar</button>` : ''}
+        ${SESSAO.papel === 'Admin' ? `<button onclick="trocarProfissional('${a.id}')" class="block text-xs font-bold border border-nude-300 text-charcoal px-2 py-1 rounded">Trocar Nail Designer</button>` : ''}
+      </td>
     </tr>`).join('');
+}
+
+async function trocarProfissional(atendimentoId){
+  const r = await apiGet('listarProfissionais');
+  if (!r.ok || !r.profissionais.length) { alert('Nenhum profissional cadastrado.'); return; }
+  const opcoes = r.profissionais.map(p => `${p.id} - ${p.nome}`).join('\n');
+  const escolha = prompt('Reatribuir para qual profissional?\n' + opcoes + '\n\nDigite o ID (ex: P123):');
+  if (!escolha) return;
+  const resultado = await apiPost('trocarProfissionalAtendimento', { atendimentoId, profissionalId: escolha.trim() });
+  alert(resultado.ok ? resultado.mensagem : ('Erro: ' + resultado.erro));
+  carregarAtendimentos();
 }
 
 async function finalizarAtendimento(id){
@@ -420,23 +449,66 @@ async function buscarClienteAdmin(){
   const resultado = await resp.json();
   const el = document.getElementById('clienteResultado');
   if (!resultado.ok || !resultado.encontrado) { el.innerHTML = '<p class="text-charcoal/50">Cliente não encontrado.</p>'; return; }
-  const c = resultado.cliente;
+  renderizarClienteEditavel(resultado.cliente);
+}
+
+function renderizarClienteEditavel(c){
+  const el = document.getElementById('clienteResultado');
   el.innerHTML = `
     <div class="space-y-2">
       <div class="flex items-center gap-2"><strong>${c.nome}</strong> ${c.vip ? '<span class="badge bg-gold-100 text-gold-700">VIP</span>' : ''}</div>
-      <div>CPF: ${c.cpf} · Tel: ${c.telefone} · E-mail: ${c.email || '-'}</div>
-      <div>Último atendimento: ${c.ultimoAtendimento || 'nunca'} · Total de atendimentos: ${c.totalAtendimentos}</div>
-      <button onclick="alternarVip('${c.cpf}', ${!c.vip})" class="text-[10px] font-bold bg-charcoal text-white px-3 py-1.5 rounded">${c.vip ? 'Remover VIP' : 'Marcar como VIP'}</button>
+      <div class="text-charcoal/50">CPF: ${c.cpf} · Último atendimento: ${c.ultimoAtendimento || 'nunca'} · Total: ${c.totalAtendimentos}</div>
+      <div class="grid sm:grid-cols-3 gap-2 pt-2">
+        <input id="editClienteNome" value="${c.nome}" placeholder="Nome" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <input id="editClienteTelefone" value="${c.telefone}" placeholder="Telefone" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <input id="editClienteEmail" value="${c.email || ''}" placeholder="E-mail" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+      </div>
+      <div class="flex gap-2 pt-1">
+        <button onclick="salvarEdicaoCliente('${c.cpf}')" class="text-sm font-bold bg-charcoal text-white px-3 py-1.5 rounded">Salvar alterações</button>
+        <button onclick="alternarVip('${c.cpf}', ${!c.vip})" class="text-sm font-bold border border-gold-500 text-gold-700 px-3 py-1.5 rounded">${c.vip ? 'Remover VIP' : 'Marcar como VIP'}</button>
+        <button onclick="excluirClienteAdmin('${c.cpf}', '${c.nome.replace(/'/g,"")}')" class="text-sm font-bold bg-warn text-white px-3 py-1.5 rounded">Excluir Cliente</button>
+      </div>
     </div>`;
+}
+
+async function salvarEdicaoCliente(cpf){
+  const nome = document.getElementById('editClienteNome').value;
+  const telefone = document.getElementById('editClienteTelefone').value;
+  const email = document.getElementById('editClienteEmail').value;
+  const r = await apiPost('editarCliente', { cpf, nome, telefone, email });
+  alert(r.ok ? r.mensagem : ('Erro: ' + r.erro));
+  if (r.ok) { buscarClienteAdmin(); carregarClientes(); }
 }
 
 async function alternarVip(cpf, vip){
   const r = await apiPost('marcarVip', { cpf, vip });
   alert(r.ok ? r.mensagem : ('Erro: ' + r.erro));
   buscarClienteAdmin();
+  carregarClientes();
 }
 
-// ============================================================
+async function excluirClienteAdmin(cpf, nome){
+  if (SESSAO.papel !== 'Admin') { alert('Só administradores podem excluir clientes.'); return; }
+  if (!confirm(`Excluir definitivamente o cadastro de ${nome}? Isso NÃO apaga os agendamentos já feitos, só o cadastro do cliente.`)) return;
+  const r = await apiPost('excluirCliente', { cpf });
+  alert(r.ok ? r.mensagem : ('Erro: ' + r.erro));
+  if (r.ok) { document.getElementById('clienteResultado').innerHTML = ''; carregarClientes(); }
+}
+
+async function carregarClientes(){
+  const r = await apiGet('listarClientes');
+  const el = document.getElementById('listaClientes');
+  if (!r.ok) { el.innerHTML = `<p class="p-3 text-warn text-sm">${r.erro}</p>`; return; }
+  el.innerHTML = r.clientes.map(c => `
+    <div class="p-3 text-sm flex items-center justify-between gap-2">
+      <div>
+        <strong>${c.nome}</strong> ${c.vip ? '<span class="badge bg-gold-100 text-gold-700">VIP</span>' : ''}<br>
+        <span class="text-charcoal/40">CPF: ${c.cpf} · Tel: ${c.telefone} · Último atendimento: ${c.ultimoAtendimento || 'nunca'}</span>
+      </div>
+      <button onclick="document.getElementById('buscaClienteCpf').value='${c.cpf}'; buscarClienteAdmin(); window.scrollTo({top:0,behavior:'smooth'});" class="text-sm font-bold border border-nude-300 px-3 py-1.5 rounded shrink-0">Editar</button>
+    </div>`).join('') || '<p class="p-3 text-charcoal/40 text-sm">Nenhum cliente cadastrado ainda.</p>';
+}
+
 // Retorno / Cancelados (sem sinal)
 // ============================================================
 async function carregarRetorno(){
@@ -444,22 +516,22 @@ async function carregarRetorno(){
   const elCancel = document.getElementById('listaCancelados');
   if (rCancel.ok) {
     elCancel.innerHTML = rCancel.clientes.map(c => `
-      <div class="bg-white rounded-xl border border-nude-200 p-3 text-xs flex items-center justify-between gap-2">
+      <div class="bg-white rounded-xl border border-nude-200 p-3 text-sm flex items-center justify-between gap-2">
         <div><strong>${c.nome}</strong><br>Faltou em ${c.data} às ${c.hora}</div>
         <a target="_blank" href="https://wa.me/55${c.telefone.replace(/\\D/g,'')}?text=${encodeURIComponent('Oi ' + c.nome + '! Vimos que você não pôde comparecer ao seu horário no Studio 14. No seu próximo agendamento você não precisa pagar os R$ 30 de sinal :) Quer marcar um novo horário?')}"
-           class="text-[10px] font-bold bg-ok text-white px-2 py-1.5 rounded whitespace-nowrap"><i class="fa-brands fa-whatsapp mr-1"></i>WhatsApp</a>
-      </div>`).join('') || '<p class="text-charcoal/40 text-xs">Nenhum cliente nessa situação.</p>';
+           class="text-xs font-bold bg-ok text-white px-2 py-1.5 rounded whitespace-nowrap"><i class="fa-brands fa-whatsapp mr-1"></i>WhatsApp</a>
+      </div>`).join('') || '<p class="text-charcoal/40 text-sm">Nenhum cliente nessa situação.</p>';
   }
 
   const rRetorno = await apiGet('listarRetorno');
   const elRetorno = document.getElementById('listaRetorno');
   if (rRetorno.ok) {
     elRetorno.innerHTML = rRetorno.clientes.map(c => `
-      <div class="bg-white rounded-xl border border-nude-200 p-3 text-xs flex items-center justify-between gap-2">
+      <div class="bg-white rounded-xl border border-nude-200 p-3 text-sm flex items-center justify-between gap-2">
         <div><strong>${c.nome}</strong> ${c.vip ? '<span class="badge bg-gold-100 text-gold-700">VIP</span>' : ''}<br>${c.diasSemAtendimento} dias sem vir (última vez: ${c.ultimoAtendimento})</div>
         <a target="_blank" href="https://wa.me/55${c.telefone.replace(/\\D/g,'')}?text=${encodeURIComponent('Oi ' + c.nome + '! Faz um tempinho que você não vem ao Studio 14 :) Bora marcar sua manutenção?')}"
-           class="text-[10px] font-bold bg-ok text-white px-2 py-1.5 rounded whitespace-nowrap"><i class="fa-brands fa-whatsapp mr-1"></i>WhatsApp</a>
-      </div>`).join('') || '<p class="text-charcoal/40 text-xs">Nenhum cliente de retorno no momento.</p>';
+           class="text-xs font-bold bg-ok text-white px-2 py-1.5 rounded whitespace-nowrap"><i class="fa-brands fa-whatsapp mr-1"></i>WhatsApp</a>
+      </div>`).join('') || '<p class="text-charcoal/40 text-sm">Nenhum cliente de retorno no momento.</p>';
   }
 }
 
@@ -469,12 +541,12 @@ async function carregarRetorno(){
 async function carregarServicos(){
   const r = await fetch(`${WEBAPP_URL}?action=listarServicos`).then(x=>x.json());
   const el = document.getElementById('listaServicos');
-  if (!r.ok) { el.innerHTML = `<p class="p-3 text-warn text-xs">${r.erro}</p>`; return; }
+  if (!r.ok) { el.innerHTML = `<p class="p-3 text-warn text-sm">${r.erro}</p>`; return; }
   el.innerHTML = r.servicos.map(s => `
-    <div class="p-3 text-xs flex items-center justify-between">
+    <div class="p-3 text-sm flex items-center justify-between">
       <div><strong>${s.nome}</strong> <span class="text-charcoal/40">(${s.categoria})</span></div>
       <div class="ledger-num">${fmt(s.valor)} · ${s.duracaoMin} min</div>
-    </div>`).join('') || '<p class="p-3 text-charcoal/40 text-xs">Nenhum serviço cadastrado.</p>';
+    </div>`).join('') || '<p class="p-3 text-charcoal/40 text-sm">Nenhum serviço cadastrado.</p>';
 }
 
 async function cadastrarServico(){
@@ -494,12 +566,12 @@ async function cadastrarServico(){
 async function carregarProfissionais(){
   const r = await apiGet('listarProfissionais');
   const el = document.getElementById('listaProfissionais');
-  if (!r.ok) { el.innerHTML = `<p class="p-3 text-warn text-xs">${r.erro}</p>`; return; }
+  if (!r.ok) { el.innerHTML = `<p class="p-3 text-warn text-sm">${r.erro}</p>`; return; }
   el.innerHTML = r.profissionais.map(p => `
-    <div class="p-3 text-xs flex items-center justify-between">
+    <div class="p-3 text-sm flex items-center justify-between">
       <div><strong>${p.nome}</strong> <span class="text-charcoal/40">(${p.especialidades || 'sem especialidade definida'})</span></div>
       <div class="ledger-num">Comissão: ${p.comissaoPercent}%</div>
-    </div>`).join('') || '<p class="p-3 text-charcoal/40 text-xs">Nenhum profissional cadastrado.</p>';
+    </div>`).join('') || '<p class="p-3 text-charcoal/40 text-sm">Nenhum profissional cadastrado.</p>';
   popularSelectProfissionais(r.profissionais);
 }
 
@@ -524,12 +596,12 @@ async function cadastrarProfissional(){
 async function carregarMesas(){
   const r = await apiGet('listarMesas');
   const el = document.getElementById('listaMesas');
-  if (!r.ok) { el.innerHTML = `<p class="p-3 text-warn text-xs">${r.erro}</p>`; return; }
+  if (!r.ok) { el.innerHTML = `<p class="p-3 text-warn text-sm">${r.erro}</p>`; return; }
   el.innerHTML = r.mesas.map(m => `
-    <div class="p-3 text-xs flex items-center justify-between">
+    <div class="p-3 text-sm flex items-center justify-between">
       <div><strong>${m.nome}</strong></div>
       <div class="text-charcoal/50 text-right">${m.servicos}</div>
-    </div>`).join('') || '<p class="p-3 text-charcoal/40 text-xs">Nenhuma mesa cadastrada.</p>';
+    </div>`).join('') || '<p class="p-3 text-charcoal/40 text-sm">Nenhuma mesa cadastrada.</p>';
 }
 
 async function cadastrarMesa(){
@@ -553,12 +625,25 @@ async function carregarUsuarios(){
   if (SESSAO.papel !== 'Admin') return;
   const r = await apiGet('listarUsuarios');
   const el = document.getElementById('listaUsuarios');
-  if (!r.ok) { el.innerHTML = `<p class="p-3 text-warn text-xs">${r.erro}</p>`; return; }
+  if (!r.ok) { el.innerHTML = `<p class="p-3 text-warn text-sm">${r.erro}</p>`; return; }
   el.innerHTML = r.usuarios.map(u => `
-    <div class="p-3 text-xs flex items-center justify-between">
-      <div><strong>${u.nome}</strong> (${u.login})<br><span class="text-charcoal/40">${u.papel === 'Admin' ? 'Acesso total' : (u.permissoes || 'sem permissões definidas')}</span></div>
+    <div class="p-3 text-sm flex items-center gap-3">
+      ${u.fotoUrl ? `<img src="${u.fotoUrl}" class="w-9 h-9 rounded-full object-cover border border-nude-200">` : `<div class="w-9 h-9 rounded-full bg-nude-100 flex items-center justify-center text-charcoal/30"><i class="fa-solid fa-user"></i></div>`}
+      <div class="flex-1">
+        <strong>${u.nome}</strong> (${u.login})<br>
+        <span class="text-charcoal/40">${u.papel === 'Admin' ? 'Acesso total' : (u.permissoes || 'sem permissões definidas')}${u.cpf ? ' · CPF: ' + u.cpf : ''}${u.email ? ' · ' + u.email : ''}</span>
+      </div>
       <span class="badge ${u.papel==='Admin'?'bg-gold-100 text-gold-700':'bg-nude-100 text-charcoal/60'}">${u.papel}</span>
-    </div>`).join('') || '<p class="p-3 text-charcoal/40 text-xs">Nenhum usuário cadastrado.</p>';
+    </div>`).join('') || '<p class="p-3 text-charcoal/40 text-sm">Nenhum usuário cadastrado.</p>';
+}
+
+function arquivoParaBase64Admin(arquivo){
+  return new Promise((resolve, reject) => {
+    const leitor = new FileReader();
+    leitor.onload = () => resolve(leitor.result.split(',')[1]);
+    leitor.onerror = reject;
+    leitor.readAsDataURL(arquivo);
+  });
 }
 
 async function cadastrarUsuario(){
@@ -568,10 +653,27 @@ async function cadastrarUsuario(){
   const papel = document.getElementById('novoUsuPapel').value;
   const profissionalId = papel === 'NailDesigner' ? document.getElementById('novoUsuProfissional').value : '';
   const permissoes = document.getElementById('novoUsuPermissoes').value;
+  const cpf = document.getElementById('novoUsuCpf').value;
+  const email = document.getElementById('novoUsuEmail').value;
+  const arquivoFoto = document.getElementById('novoUsuFoto').files[0];
   if (!login || !senha || !nome) { alert('Preencha login, senha e nome.'); return; }
-  const r = await apiPost('cadastrarUsuario', { login, senha, nome, papel, profissionalId, permissoes });
-  alert(r.ok ? r.mensagem : ('Erro: ' + r.erro));
-  if (r.ok) { document.getElementById('novoUsuLogin').value=''; document.getElementById('novoUsuSenha').value=''; document.getElementById('novoUsuNome').value=''; carregarUsuarios(); }
+
+  const r = await apiPost('cadastrarUsuario', { login, senha, nome, papel, profissionalId, permissoes, cpf, email });
+  if (!r.ok) { alert('Erro: ' + r.erro); return; }
+
+  if (arquivoFoto) {
+    const base64 = await arquivoParaBase64Admin(arquivoFoto);
+    await apiPost('uploadFotoUsuario', { login, imagemBase64: base64, mimeType: arquivoFoto.type });
+  }
+
+  alert(r.mensagem);
+  document.getElementById('novoUsuLogin').value='';
+  document.getElementById('novoUsuSenha').value='';
+  document.getElementById('novoUsuNome').value='';
+  document.getElementById('novoUsuCpf').value='';
+  document.getElementById('novoUsuEmail').value='';
+  document.getElementById('novoUsuFoto').value='';
+  carregarUsuarios();
 }
 </script>
 </body>
