@@ -164,6 +164,7 @@
             <a href="#presencial" class="block text-base font-bold text-gold-600 mobile-link">Imersão Presencial VIP (2 Vagas)</a>
             <a href="#calculadora" class="block text-base font-medium text-charcoal hover:text-nude-600 mobile-link">Calculadora de Ganhos</a>
             <a href="#faq" class="block text-base font-medium text-charcoal hover:text-nude-600 mobile-link">Perguntas Frequentes</a>
+            <a href="index-admin.html" class="block text-base font-medium text-charcoal/50 hover:text-nude-600 mobile-link"><i class="fa-solid fa-lock text-xs mr-1.5"></i>Acesso Interno</a>
             <div class="pt-4 flex flex-col gap-3">
                 <a href="#agendar" class="w-full text-center py-3 text-xs font-bold uppercase tracking-wider rounded-xl border border-charcoal text-charcoal mobile-link">
                     Agendar Atendimento
@@ -1044,12 +1045,15 @@
 
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-nude-400">
                 <p>&copy; 2026 Studio 14 & Elieti Coutinho. Todos os direitos reservados.</p>
-                <div class="flex gap-4">
+                <div class="flex items-center gap-4">
                     <a href="#" class="hover:underline">Termos de Uso</a>
                     <span>•</span>
                     <a href="#" class="hover:underline">Política de Privacidade</a>
+                    <span>•</span>
+                    <a href="index-admin.html" class="hover:underline text-gold-400/70 hover:text-gold-300"><i class="fa-solid fa-lock text-[10px] mr-1"></i>Acesso Interno</a>
                 </div>
             </div>
+            <p class="text-center text-[10px] text-nude-500/60" id="siteVersion"></p>
         </div>
     </footer>
 
@@ -1454,6 +1458,13 @@
         // Agendamento real com checagem de conflito (Google Apps Script)
         // TROQUE pela URL do seu deployment do Apps Script
         // ============================================================
+        // ============================================================
+        // CONTROLE DE VERSÃO deste arquivo (index.html)
+        // Atualize esse valor manualmente sempre que subir uma nova versão.
+        // ============================================================
+        const VERSAO_INDEX = '1.1.0 · 22/09/2026';
+        document.getElementById('siteVersion').textContent = `Studio 14 · v${VERSAO_INDEX}`;
+
         const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbztKAG3uE_fi9CKjsJMJnYoAJqPHDF3uXl4AyDDip_vm_GMOG7Z7L-7Xzxa1OjgmNDJ/exec';
         // Mesma chave configurada em "Propriedades do script" (propriedade API_KEY) no Apps Script.
         const APP_API_KEY = 'hypEPwreT82ulYb0HQg716ItJx9D60tt';
