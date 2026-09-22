@@ -1054,7 +1054,7 @@
                     <a href="index-admin.html" class="hover:underline text-gold-400/70 hover:text-gold-300"><i class="fa-solid fa-lock text-[10px] mr-1"></i>Acesso Interno</a>
                 </div>
             </div>
-            <p class="text-center text-[10px] text-nude-500/60" id="siteVersion"></p>
+            <p class="text-center text-xs text-gold-400/70 font-semibold" id="siteVersion"></p>
         </div>
     </footer>
 
@@ -1513,7 +1513,10 @@
         // Atualize esse valor manualmente sempre que subir uma nova versão.
         // ============================================================
         const VERSAO_INDEX = '1.2.0 · 22/09/2026';
-        document.getElementById('siteVersion').textContent = `Studio 14 · v${VERSAO_INDEX}`;
+        document.addEventListener('DOMContentLoaded', () => {
+            const el = document.getElementById('siteVersion');
+            if (el) el.textContent = `Studio 14 · v${VERSAO_INDEX}`;
+        });
 
         const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbztKAG3uE_fi9CKjsJMJnYoAJqPHDF3uXl4AyDDip_vm_GMOG7Z7L-7Xzxa1OjgmNDJ/exec';
         // Mesma chave configurada em "Propriedades do script" (propriedade API_KEY) no Apps Script.
