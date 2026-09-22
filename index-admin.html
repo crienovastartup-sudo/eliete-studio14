@@ -36,8 +36,8 @@ tailwind.config = { theme: { extend: {
   // A versão do index.html precisa ser copiada daqui (VERSAO_INDEX
   // dentro do próprio index.html) sempre que você atualizar os dois juntos.
   // ============================================================
-  const VERSAO_ADMIN = '1.1.0 · 22/09/2026';
-  const VERSAO_INDEX_PUBLICO = '1.1.0 · 22/09/2026';
+  const VERSAO_ADMIN = '1.2.0 · 22/09/2026';
+  const VERSAO_INDEX_PUBLICO = '1.2.0 · 22/09/2026';
 
   async function mostrarVersoes() {
     const el = document.getElementById('versoesInfo');
@@ -85,12 +85,13 @@ tailwind.config = { theme: { extend: {
 
   <!-- Abas -->
   <nav class="max-w-7xl mx-auto px-6 mt-6 flex gap-2 overflow-x-auto pb-2">
-    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap" data-tab="agendamentos">Agendamentos</button>
-    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap" data-tab="atendimentos">Atendimentos</button>
-    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap" data-tab="clientes">Clientes</button>
-    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap" data-tab="retorno">Retorno / Sem Sinal</button>
-    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap" data-tab="servicos">Serviços</button>
-    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap" data-tab="profissionais">Profissionais</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap" data-tab="agendamentos" data-perm="agendamentos">Agendamentos</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap" data-tab="atendimentos" data-perm="atendimentos">Atendimentos</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap" data-tab="clientes" data-perm="clientes">Clientes</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap" data-tab="retorno" data-perm="retorno">Retorno / Sem Sinal</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap" data-tab="servicos" data-perm="servicos">Serviços</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap" data-tab="profissionais" data-perm="profissionais">Profissionais</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap admin-only hidden" data-tab="mesas">Mesas</button>
     <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap admin-only hidden" data-tab="usuarios">Usuários</button>
   </nav>
 
@@ -107,6 +108,7 @@ tailwind.config = { theme: { extend: {
           <option value="Atendido">Atendido</option>
           <option value="Cancelado">Cancelado</option>
           <option value="Reutilizado">Reutilizado</option>
+          <option value="Arquivado">Arquivado</option>
         </select>
       </div>
       <div class="bg-white rounded-2xl border border-nude-200 overflow-x-auto">
@@ -188,6 +190,18 @@ tailwind.config = { theme: { extend: {
       <div id="listaProfissionais" class="bg-white rounded-2xl border border-nude-200 divide-y divide-nude-100"></div>
     </div>
 
+    <!-- Mesas (admin only) -->
+    <div class="tab-content hidden" id="tab-mesas">
+      <h2 class="font-serif text-xl font-bold mb-3">Mesas de atendimento</h2>
+      <div class="grid md:grid-cols-3 gap-2 mb-4 bg-white rounded-2xl border border-nude-200 p-4">
+        <input id="novaMesaNome" placeholder="Nome da mesa (ex: Mesa 3)" class="text-xs border border-nude-300 rounded-lg px-3 py-2">
+        <input id="novaMesaServicos" placeholder="Serviços habilitados (separados por vírgula)" class="text-xs border border-nude-300 rounded-lg px-3 py-2 md:col-span-2">
+        <button onclick="cadastrarMesa()" class="text-xs font-bold bg-charcoal text-white px-3 py-2 rounded-lg md:col-span-3">Cadastrar Mesa</button>
+      </div>
+      <p class="text-[10px] text-charcoal/40 mb-2">Os nomes dos serviços precisam ser IDÊNTICOS aos cadastrados na aba Serviços (copie e cole).</p>
+      <div id="listaMesas" class="bg-white rounded-2xl border border-nude-200 divide-y divide-nude-100"></div>
+    </div>
+
     <!-- Usuários (admin only) -->
     <div class="tab-content hidden" id="tab-usuarios">
       <h2 class="font-serif text-xl font-bold mb-3">Usuários do sistema</h2>
@@ -200,8 +214,10 @@ tailwind.config = { theme: { extend: {
           <option value="NailDesigner">Nail Designer</option>
         </select>
         <select id="novoUsuProfissional" class="text-xs border border-nude-300 rounded-lg px-3 py-2 hidden"></select>
+        <input id="novoUsuPermissoes" placeholder="Permissões (ex: agendamentos,atendimentos,clientes)" value="agendamentos,atendimentos,clientes" class="text-xs border border-nude-300 rounded-lg px-3 py-2 md:col-span-2">
         <button onclick="cadastrarUsuario()" class="text-xs font-bold bg-charcoal text-white px-3 py-2 rounded-lg">Cadastrar Usuário</button>
       </div>
+      <p class="text-[10px] text-charcoal/40 mb-2">Abas disponíveis para permissão: agendamentos, atendimentos, clientes, retorno, servicos, profissionais. Admin sempre vê tudo.</p>
       <div id="listaUsuarios" class="bg-white rounded-2xl border border-nude-200 divide-y divide-nude-100"></div>
     </div>
 
@@ -253,10 +269,25 @@ function entrarNoApp(){
   document.getElementById('loginScreen').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
   document.getElementById('usuarioLogado').textContent = `${SESSAO.nome} · ${SESSAO.papel}`;
+
   if (SESSAO.papel === 'Admin') {
     document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
+  } else {
+    // Nail Designer: mostra só as abas permitidas (Permissoes vem do cadastro do usuário)
+    const permitidas = (SESSAO.permissoes || '').split(',').map(p => p.trim()).filter(Boolean);
+    document.querySelectorAll('.tab-btn[data-perm]').forEach(btn => {
+      if (permitidas.indexOf(btn.dataset.perm) === -1) btn.remove();
+    });
   }
-  carregarAgendamentos();
+
+  // Ativa a primeira aba que sobrou visível
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+  const primeiraAba = document.querySelector('.tab-btn:not(.hidden)');
+  if (primeiraAba) {
+    primeiraAba.classList.add('tab-active');
+    document.getElementById('tab-' + primeiraAba.dataset.tab).classList.remove('hidden');
+    carregarAbaAtual(primeiraAba.dataset.tab);
+  }
 }
 
 // Restaura sessão salva (evita ter que logar de novo a cada refresh)
@@ -280,7 +311,6 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     carregarAbaAtual(btn.dataset.tab);
   });
 });
-document.querySelector('.tab-btn').classList.add('tab-active');
 
 function carregarAbaAtual(tab){
   if (tab === 'agendamentos') carregarAgendamentos();
@@ -288,6 +318,7 @@ function carregarAbaAtual(tab){
   if (tab === 'retorno') carregarRetorno();
   if (tab === 'servicos') carregarServicos();
   if (tab === 'profissionais') carregarProfissionais();
+  if (tab === 'mesas') carregarMesas();
   if (tab === 'usuarios') carregarUsuarios();
 }
 
@@ -319,7 +350,7 @@ async function carregarAgendamentos(){
   const tbody = document.getElementById('tbodyAgendamentos');
   if (!r.ok) { tbody.innerHTML = `<tr><td colspan="9" class="p-3 text-warn">${r.erro}</td></tr>`; return; }
 
-  const corStatus = { Iniciado:'bg-amber-100 text-amber-700', Concluido:'bg-blue-100 text-blue-700', Atendido:'bg-green-100 text-green-700', Cancelado:'bg-red-100 text-red-700', Reutilizado:'bg-nude-200 text-charcoal/60' };
+  const corStatus = { Iniciado:'bg-amber-100 text-amber-700', Concluido:'bg-blue-100 text-blue-700', Atendido:'bg-green-100 text-green-700', Cancelado:'bg-red-100 text-red-700', Reutilizado:'bg-nude-200 text-charcoal/60', Arquivado:'bg-nude-200 text-charcoal/40' };
 
   tbody.innerHTML = r.agendamentos.map(a => `
     <tr class="border-t border-nude-100">
@@ -330,7 +361,8 @@ async function carregarAgendamentos(){
       <td class="p-3"><span class="badge ${corStatus[a.status]||''}">${a.status}</span></td>
       <td class="p-3 space-y-1">
         ${a.status === 'Iniciado' || a.status === 'Concluido' ? `<button onclick="iniciarAtendimento('${a.id}')" class="block text-[10px] font-bold bg-charcoal text-white px-2 py-1 rounded">Iniciar Atendimento</button>` : ''}
-        ${a.status !== 'Cancelado' && a.status !== 'Reutilizado' && a.status !== 'Atendido' ? `<button onclick="marcarStatusAg('${a.id}','Cancelado')" class="block text-[10px] font-bold bg-warn text-white px-2 py-1 rounded">Não Compareceu</button>` : ''}
+        ${a.status !== 'Cancelado' && a.status !== 'Reutilizado' && a.status !== 'Atendido' && a.status !== 'Arquivado' ? `<button onclick="marcarStatusAg('${a.id}','Cancelado')" class="block text-[10px] font-bold bg-warn text-white px-2 py-1 rounded">Não Compareceu</button>` : ''}
+        ${a.status !== 'Arquivado' ? `<button onclick="marcarStatusAg('${a.id}','Arquivado')" class="block text-[10px] font-bold bg-nude-200 text-charcoal/70 px-2 py-1 rounded"><i class="fa-solid fa-box-archive mr-1"></i>Arquivar</button>` : ''}
       </td>
     </tr>`).join('');
 }
@@ -487,6 +519,29 @@ async function cadastrarProfissional(){
 }
 
 // ============================================================
+// Mesas (admin only)
+// ============================================================
+async function carregarMesas(){
+  const r = await apiGet('listarMesas');
+  const el = document.getElementById('listaMesas');
+  if (!r.ok) { el.innerHTML = `<p class="p-3 text-warn text-xs">${r.erro}</p>`; return; }
+  el.innerHTML = r.mesas.map(m => `
+    <div class="p-3 text-xs flex items-center justify-between">
+      <div><strong>${m.nome}</strong></div>
+      <div class="text-charcoal/50 text-right">${m.servicos}</div>
+    </div>`).join('') || '<p class="p-3 text-charcoal/40 text-xs">Nenhuma mesa cadastrada.</p>';
+}
+
+async function cadastrarMesa(){
+  const nome = document.getElementById('novaMesaNome').value;
+  const servicos = document.getElementById('novaMesaServicos').value;
+  if (!nome || !servicos) { alert('Preencha nome da mesa e ao menos um serviço.'); return; }
+  const r = await apiPost('cadastrarMesa', { nome, servicos });
+  alert(r.ok ? r.mensagem : ('Erro: ' + r.erro));
+  if (r.ok) { document.getElementById('novaMesaNome').value=''; document.getElementById('novaMesaServicos').value=''; carregarMesas(); }
+}
+
+// ============================================================
 // Usuários (admin only)
 // ============================================================
 function toggleProfissionalSelect(){
@@ -501,7 +556,7 @@ async function carregarUsuarios(){
   if (!r.ok) { el.innerHTML = `<p class="p-3 text-warn text-xs">${r.erro}</p>`; return; }
   el.innerHTML = r.usuarios.map(u => `
     <div class="p-3 text-xs flex items-center justify-between">
-      <div><strong>${u.nome}</strong> (${u.login})</div>
+      <div><strong>${u.nome}</strong> (${u.login})<br><span class="text-charcoal/40">${u.papel === 'Admin' ? 'Acesso total' : (u.permissoes || 'sem permissões definidas')}</span></div>
       <span class="badge ${u.papel==='Admin'?'bg-gold-100 text-gold-700':'bg-nude-100 text-charcoal/60'}">${u.papel}</span>
     </div>`).join('') || '<p class="p-3 text-charcoal/40 text-xs">Nenhum usuário cadastrado.</p>';
 }
@@ -512,8 +567,9 @@ async function cadastrarUsuario(){
   const nome = document.getElementById('novoUsuNome').value;
   const papel = document.getElementById('novoUsuPapel').value;
   const profissionalId = papel === 'NailDesigner' ? document.getElementById('novoUsuProfissional').value : '';
+  const permissoes = document.getElementById('novoUsuPermissoes').value;
   if (!login || !senha || !nome) { alert('Preencha login, senha e nome.'); return; }
-  const r = await apiPost('cadastrarUsuario', { login, senha, nome, papel, profissionalId });
+  const r = await apiPost('cadastrarUsuario', { login, senha, nome, papel, profissionalId, permissoes });
   alert(r.ok ? r.mensagem : ('Erro: ' + r.erro));
   if (r.ok) { document.getElementById('novoUsuLogin').value=''; document.getElementById('novoUsuSenha').value=''; document.getElementById('novoUsuNome').value=''; carregarUsuarios(); }
 }
