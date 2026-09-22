@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Studio 14 | Painel Interno</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script>
+tailwind.config = { theme: { extend: {
+  colors: { charcoal:'#1A1817', softblack:'#121110', nude:{50:'#FAF6F0',100:'#F5ECE3',200:'#EBD9C8'},
+            gold:{300:'#F3DB9A',400:'#E6C368',500:'#D4AF37',600:'#AA8821'}, ok:'#3F7A5C', warn:'#B5482D' },
+  fontFamily: { serif:['Cormorant Garamond','serif'], sans:['Plus Jakarta Sans','sans-serif'], mono:['JetBrains Mono','monospace'] }
+}}}
+</script>
+<style>
+  .ledger-num{ font-family:'JetBrains Mono',monospace; font-variant-numeric: tabular-nums; }
+  .tab-active{ background:#1A1817; color:#F3DB9A; }
+  .badge{ font-size:10px; font-weight:700; text-transform:uppercase; padding:2px 8px; border-radius:9999px; }
+  ::-webkit-scrollbar{ height:6px; width:6px; } ::-webkit-scrollbar-thumb{ background:#D4AF37; border-radius:4px; }
+</style>
+</head>
+<body class="bg-nude-50 text-charcoal font-sans">
+
+<!-- ============================================================
+     CONFIGURAÇÃO — troque pela URL do seu Apps Script publicado
+     ============================================================ -->
+<script>
+  const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbztKAG3uE_fi9CKjsJMJnYoAJqPHDF3uXl4AyDDip_vm_GMOG7Z7L-7Xzxa1OjgmNDJ/exec';
+  // Mesma chave configurada em "Propriedades do script" (propriedade API_KEY) no Apps Script.
+  const APP_API_KEY = 'hypEPwreT82ulYb0HQg716ItJx9D60tt';
+</script>
+
+<!-- ===== TELA DE LOGIN (usuário/senha reais, via Apps Script) ===== -->
+<div id="loginScreen" class="fixed inset-0 z-50 bg-charcoal flex items-center justify-center p-6">
+  <div class="max-w-sm w-full bg-white rounded-3xl p-8 space-y-5 text-center">
+    <div class="w-14 h-14 mx-auto rounded-full bg-charcoal text-gold-400 flex items-center justify-center font-serif text-xl font-bold border border-gold-500/40">14</div>
+    <h1 class="font-serif text-2xl font-bold">Painel Interno · Studio 14</h1>
+    <p class="text-xs text-charcoal/60">Acesso restrito à equipe.</p>
+    <input id="loginUsuario" type="text" placeholder="Usuário" class="w-full px-4 py-3 rounded-xl border border-nude-200 text-sm text-center">
+    <input id="loginSenha" type="password" placeholder="Senha" class="w-full px-4 py-3 rounded-xl border border-nude-200 text-sm text-center">
+    <button onclick="fazerLogin()" class="w-full py-3 rounded-full bg-charcoal text-gold-300 text-xs font-bold uppercase tracking-wider">Entrar</button>
+    <p id="loginErro" class="text-xs text-warn hidden"></p>
+  </div>
+</div>
+
+<!-- ===== APP ===== -->
+<div id="app" class="hidden">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-30 bg-charcoal text-nude-100 border-b border-gold-500/20">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-gold-500 text-charcoal flex items-center justify-center font-serif font-bold">14</div>
+        <span class="font-serif text-lg font-bold tracking-wide">Painel Interno</span>
+      </div>
+      <div class="flex items-center gap-4 text-xs text-nude-300">
+        <span id="usuarioLogado"></span>
+        <button onclick="fazerLogout()" class="text-gold-400 hover:text-gold-300"><i class="fa-solid fa-arrow-right-from-bracket mr-1"></i>Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Abas -->
+  <nav class="max-w-7xl mx-auto px-6 mt-6 flex gap-2 overflow-x-auto pb-2">
+    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap" data-tab="agendamentos">Agendamentos</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap" data-tab="atendimentos">Atendimentos</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap" data-tab="clientes">Clientes</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap" data-tab="retorno">Retorno / Sem Sinal</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap" data-tab="servicos">Serviços</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap" data-tab="profissionais">Profissionais</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap admin-only hidden" data-tab="usuarios">Usuários</button>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-6 pb-16 mt-4 space-y-6">
+
+    <!-- Agendamentos -->
+    <div class="tab-content" id="tab-agendamentos">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-serif text-xl font-bold">Agendamentos</h2>
+        <select id="filtroStatusAg" onchange="carregarAgendamentos()" class="text-xs border border-nude-300 rounded-lg px-2 py-1.5">
+          <option value="">Todos os status</option>
+          <option value="Iniciado">Iniciado</option>
+          <option value="Concluido">Concluído (sinal pago)</option>
+          <option value="Atendido">Atendido</option>
+          <option value="Cancelado">Cancelado</option>
+          <option value="Reutilizado">Reutilizado</option>
+        </select>
+      </div>
+      <div class="bg-white rounded-2xl border border-nude-200 overflow-x-auto">
+        <table class="w-full text-xs">
+          <thead class="bg-nude-100 text-charcoal/60 uppercase tracking-wider text-[10px]">
+            <tr>
+              <th class="p-3 text-left">Data</th><th class="p-3 text-left">Hora</th><th class="p-3 text-left">Mesa</th>
+              <th class="p-3 text-left">Cliente</th><th class="p-3 text-left">Serviço</th><th class="p-3 text-left">Valor</th>
+              <th class="p-3 text-left">Sinal</th><th class="p-3 text-left">Status</th><th class="p-3 text-left">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyAgendamentos"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Atendimentos -->
+    <div class="tab-content hidden" id="tab-atendimentos">
+      <h2 class="font-serif text-xl font-bold mb-3">Atendimentos (mesa / profissional)</h2>
+      <div class="bg-white rounded-2xl border border-nude-200 overflow-x-auto">
+        <table class="w-full text-xs">
+          <thead class="bg-nude-100 text-charcoal/60 uppercase tracking-wider text-[10px]">
+            <tr>
+              <th class="p-3 text-left">Início</th><th class="p-3 text-left">Cliente</th><th class="p-3 text-left">Serviço</th>
+              <th class="p-3 text-left">Profissional</th><th class="p-3 text-left">Valor</th><th class="p-3 text-left">Status</th><th class="p-3 text-left">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyAtendimentos"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Clientes -->
+    <div class="tab-content hidden" id="tab-clientes">
+      <div class="flex items-center gap-3 mb-3">
+        <h2 class="font-serif text-xl font-bold">Clientes</h2>
+        <input id="buscaClienteCpf" placeholder="Buscar por CPF" class="text-xs border border-nude-300 rounded-lg px-3 py-1.5">
+        <button onclick="buscarClienteAdmin()" class="text-xs font-bold bg-charcoal text-white px-3 py-1.5 rounded-lg">Buscar</button>
+      </div>
+      <div id="clienteResultado" class="bg-white rounded-2xl border border-nude-200 p-4 text-xs"></div>
+    </div>
+
+    <!-- Retorno / Sem sinal -->
+    <div class="tab-content hidden" id="tab-retorno">
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <h2 class="font-serif text-xl font-bold mb-3">Não compareceram (próximo agend. sem sinal)</h2>
+          <div id="listaCancelados" class="space-y-2"></div>
+        </div>
+        <div>
+          <h2 class="font-serif text-xl font-bold mb-3">Clientes para retorno (25+ dias)</h2>
+          <div id="listaRetorno" class="space-y-2"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Serviços -->
+    <div class="tab-content hidden" id="tab-servicos">
+      <h2 class="font-serif text-xl font-bold mb-3">Serviços</h2>
+      <div class="grid md:grid-cols-3 gap-2 mb-4 bg-white rounded-2xl border border-nude-200 p-4">
+        <input id="novoServicoNome" placeholder="Nome do serviço" class="text-xs border border-nude-300 rounded-lg px-3 py-2">
+        <input id="novoServicoCategoria" placeholder="Categoria" class="text-xs border border-nude-300 rounded-lg px-3 py-2">
+        <input id="novoServicoValor" type="number" placeholder="Valor (R$)" class="text-xs border border-nude-300 rounded-lg px-3 py-2">
+        <input id="novoServicoDuracao" type="number" placeholder="Duração (min)" class="text-xs border border-nude-300 rounded-lg px-3 py-2">
+        <button onclick="cadastrarServico()" class="text-xs font-bold bg-charcoal text-white px-3 py-2 rounded-lg md:col-span-2">Cadastrar Serviço</button>
+      </div>
+      <div id="listaServicos" class="bg-white rounded-2xl border border-nude-200 divide-y divide-nude-100"></div>
+    </div>
+
+    <!-- Profissionais -->
+    <div class="tab-content hidden" id="tab-profissionais">
+      <h2 class="font-serif text-xl font-bold mb-3">Profissionais (Nail Designers)</h2>
+      <div class="grid md:grid-cols-3 gap-2 mb-4 bg-white rounded-2xl border border-nude-200 p-4">
+        <input id="novoProfNome" placeholder="Nome" class="text-xs border border-nude-300 rounded-lg px-3 py-2">
+        <input id="novoProfEspecialidades" placeholder="Especialidades" class="text-xs border border-nude-300 rounded-lg px-3 py-2">
+        <input id="novoProfComissao" type="number" placeholder="Comissão %" class="text-xs border border-nude-300 rounded-lg px-3 py-2">
+        <button onclick="cadastrarProfissional()" class="text-xs font-bold bg-charcoal text-white px-3 py-2 rounded-lg md:col-span-3">Cadastrar Profissional</button>
+      </div>
+      <div id="listaProfissionais" class="bg-white rounded-2xl border border-nude-200 divide-y divide-nude-100"></div>
+    </div>
+
+    <!-- Usuários (admin only) -->
+    <div class="tab-content hidden" id="tab-usuarios">
+      <h2 class="font-serif text-xl font-bold mb-3">Usuários do sistema</h2>
+      <div class="grid md:grid-cols-3 gap-2 mb-4 bg-white rounded-2xl border border-nude-200 p-4">
+        <input id="novoUsuLogin" placeholder="Login" class="text-xs border border-nude-300 rounded-lg px-3 py-2">
+        <input id="novoUsuSenha" type="password" placeholder="Senha" class="text-xs border border-nude-300 rounded-lg px-3 py-2">
+        <input id="novoUsuNome" placeholder="Nome" class="text-xs border border-nude-300 rounded-lg px-3 py-2">
+        <select id="novoUsuPapel" onchange="toggleProfissionalSelect()" class="text-xs border border-nude-300 rounded-lg px-3 py-2">
+          <option value="Admin">Admin</option>
+          <option value="NailDesigner">Nail Designer</option>
+        </select>
+        <select id="novoUsuProfissional" class="text-xs border border-nude-300 rounded-lg px-3 py-2 hidden"></select>
+        <button onclick="cadastrarUsuario()" class="text-xs font-bold bg-charcoal text-white px-3 py-2 rounded-lg">Cadastrar Usuário</button>
+      </div>
+      <div id="listaUsuarios" class="bg-white rounded-2xl border border-nude-200 divide-y divide-nude-100"></div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ============================================================
+// SESSÃO
+// ============================================================
+let SESSAO = null; // { token, nome, papel, profissionalId }
+
+async function fazerLogin(){
+  const usuario = document.getElementById('loginUsuario').value;
+  const senha = document.getElementById('loginSenha').value;
+  const erroEl = document.getElementById('loginErro');
+  erroEl.classList.add('hidden');
+
+  try {
+    const resp = await fetch(WEBAPP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'login', apiKey: APP_API_KEY, login: usuario, senha: senha })
+    });
+    const resultado = await resp.json();
+    if (!resultado.ok) {
+      erroEl.textContent = resultado.erro;
+      erroEl.classList.remove('hidden');
+      return;
+    }
+    SESSAO = resultado;
+    sessionStorage.setItem('studio14_sessao', JSON.stringify(SESSAO));
+    entrarNoApp();
+  } catch (e) {
+    erroEl.textContent = 'Erro ao conectar. Confira a WEBAPP_URL configurada.';
+    erroEl.classList.remove('hidden');
+  }
+}
+
+function fazerLogout(){
+  if (SESSAO) {
+    fetch(WEBAPP_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'logout', apiKey: APP_API_KEY, token: SESSAO.token }) });
+  }
+  sessionStorage.removeItem('studio14_sessao');
+  location.reload();
+}
+
+function entrarNoApp(){
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('usuarioLogado').textContent = `${SESSAO.nome} · ${SESSAO.papel}`;
+  if (SESSAO.papel === 'Admin') {
+    document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
+  }
+  carregarAgendamentos();
+}
+
+// Restaura sessão salva (evita ter que logar de novo a cada refresh)
+(function tentarRestaurarSessao(){
+  const salva = sessionStorage.getItem('studio14_sessao');
+  if (salva) {
+    SESSAO = JSON.parse(salva);
+    window.addEventListener('DOMContentLoaded', entrarNoApp);
+  }
+})();
+
+// ============================================================
+// Abas
+// ============================================================
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('tab-active'));
+    btn.classList.add('tab-active');
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.add('hidden'));
+    document.getElementById('tab-'+btn.dataset.tab).classList.remove('hidden');
+    carregarAbaAtual(btn.dataset.tab);
+  });
+});
+document.querySelector('.tab-btn').classList.add('tab-active');
+
+function carregarAbaAtual(tab){
+  if (tab === 'agendamentos') carregarAgendamentos();
+  if (tab === 'atendimentos') carregarAtendimentos();
+  if (tab === 'retorno') carregarRetorno();
+  if (tab === 'servicos') carregarServicos();
+  if (tab === 'profissionais') carregarProfissionais();
+  if (tab === 'usuarios') carregarUsuarios();
+}
+
+function fmt(v){ return 'R$ ' + Number(v||0).toLocaleString('pt-BR', {minimumFractionDigits:2}); }
+
+async function apiGet(action, params){
+  params = params || {};
+  params.token = SESSAO ? SESSAO.token : '';
+  const qs = new URLSearchParams(params).toString();
+  const resp = await fetch(`${WEBAPP_URL}?action=${action}&${qs}`);
+  return resp.json();
+}
+
+async function apiPost(action, dados){
+  dados = dados || {};
+  dados.action = action;
+  dados.apiKey = APP_API_KEY;
+  dados.token = SESSAO ? SESSAO.token : '';
+  const resp = await fetch(WEBAPP_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(dados) });
+  return resp.json();
+}
+
+// ============================================================
+// Agendamentos
+// ============================================================
+async function carregarAgendamentos(){
+  const status = document.getElementById('filtroStatusAg').value;
+  const r = await apiGet('listarAgendamentos', status ? {status} : {});
+  const tbody = document.getElementById('tbodyAgendamentos');
+  if (!r.ok) { tbody.innerHTML = `<tr><td colspan="9" class="p-3 text-warn">${r.erro}</td></tr>`; return; }
+
+  const corStatus = { Iniciado:'bg-amber-100 text-amber-700', Concluido:'bg-blue-100 text-blue-700', Atendido:'bg-green-100 text-green-700', Cancelado:'bg-red-100 text-red-700', Reutilizado:'bg-nude-200 text-charcoal/60' };
+
+  tbody.innerHTML = r.agendamentos.map(a => `
+    <tr class="border-t border-nude-100">
+      <td class="p-3 ledger-num">${a.data}</td><td class="p-3 ledger-num">${a.hora}</td><td class="p-3">${a.mesa}</td>
+      <td class="p-3">${a.nome}<br><span class="text-charcoal/40">${a.telefone}</span></td>
+      <td class="p-3">${a.servico}</td><td class="p-3 ledger-num">${fmt(a.valorServico)}</td>
+      <td class="p-3">${fmt(a.sinal)}<br><span class="text-[10px] text-charcoal/40">${a.sinalStatus}</span></td>
+      <td class="p-3"><span class="badge ${corStatus[a.status]||''}">${a.status}</span></td>
+      <td class="p-3 space-y-1">
+        ${a.status === 'Iniciado' || a.status === 'Concluido' ? `<button onclick="iniciarAtendimento('${a.id}')" class="block text-[10px] font-bold bg-charcoal text-white px-2 py-1 rounded">Iniciar Atendimento</button>` : ''}
+        ${a.status !== 'Cancelado' && a.status !== 'Reutilizado' && a.status !== 'Atendido' ? `<button onclick="marcarStatusAg('${a.id}','Cancelado')" class="block text-[10px] font-bold bg-warn text-white px-2 py-1 rounded">Não Compareceu</button>` : ''}
+      </td>
+    </tr>`).join('');
+}
+
+async function iniciarAtendimento(agendamentoId){
+  let profissionalId = SESSAO.profissionalId;
+  if (SESSAO.papel === 'Admin') {
+    const r = await apiGet('listarProfissionais');
+    const opcoes = r.profissionais.map(p => `${p.id} - ${p.nome}`).join('\n');
+    const escolha = prompt('Qual profissional vai atender?\n' + opcoes + '\n\nDigite o ID (ex: P123):');
+    if (!escolha) return;
+    profissionalId = escolha.trim();
+  }
+  const r = await apiPost('iniciarAtendimento', { agendamentoId, profissionalId });
+  alert(r.ok ? r.mensagem : ('Erro: ' + r.erro));
+  carregarAgendamentos();
+}
+
+async function marcarStatusAg(id, novoStatus){
+  if (!confirm(`Confirmar mudança de status para "${novoStatus}"?`)) return;
+  const r = await apiPost('marcarStatus', { id, novoStatus });
+  alert(r.ok ? r.mensagem : ('Erro: ' + r.erro));
+  carregarAgendamentos();
+}
+
+// ============================================================
+// Atendimentos
+// ============================================================
+async function carregarAtendimentos(){
+  const r = await apiGet('listarAtendimentos');
+  const tbody = document.getElementById('tbodyAtendimentos');
+  if (!r.ok) { tbody.innerHTML = `<tr><td colspan="7" class="p-3 text-warn">${r.erro}</td></tr>`; return; }
+  tbody.innerHTML = r.atendimentos.map(a => `
+    <tr class="border-t border-nude-100">
+      <td class="p-3 ledger-num">${new Date(a.dataInicio).toLocaleString('pt-BR')}</td>
+      <td class="p-3">${a.nomeCliente}</td><td class="p-3">${a.servico}</td><td class="p-3">${a.profissionalNome}</td>
+      <td class="p-3 ledger-num">${fmt(a.valorServico)}</td>
+      <td class="p-3"><span class="badge ${a.status==='Concluído'?'bg-green-100 text-green-700':'bg-amber-100 text-amber-700'}">${a.status}</span></td>
+      <td class="p-3">${a.status !== 'Concluído' ? `<button onclick="finalizarAtendimento('${a.id}')" class="text-[10px] font-bold bg-charcoal text-white px-2 py-1 rounded">Finalizar</button>` : ''}</td>
+    </tr>`).join('');
+}
+
+async function finalizarAtendimento(id){
+  const r = await apiPost('finalizarAtendimento', { atendimentoId: id });
+  alert(r.ok ? r.mensagem : ('Erro: ' + r.erro));
+  carregarAtendimentos();
+}
+
+// ============================================================
+// Clientes
+// ============================================================
+async function buscarClienteAdmin(){
+  const cpf = document.getElementById('buscaClienteCpf').value;
+  const resp = await fetch(`${WEBAPP_URL}?action=buscarCliente&cpf=${encodeURIComponent(cpf)}`);
+  const resultado = await resp.json();
+  const el = document.getElementById('clienteResultado');
+  if (!resultado.ok || !resultado.encontrado) { el.innerHTML = '<p class="text-charcoal/50">Cliente não encontrado.</p>'; return; }
+  const c = resultado.cliente;
+  el.innerHTML = `
+    <div class="space-y-2">
+      <div class="flex items-center gap-2"><strong>${c.nome}</strong> ${c.vip ? '<span class="badge bg-gold-100 text-gold-700">VIP</span>' : ''}</div>
+      <div>CPF: ${c.cpf} · Tel: ${c.telefone} · E-mail: ${c.email || '-'}</div>
+      <div>Último atendimento: ${c.ultimoAtendimento || 'nunca'} · Total de atendimentos: ${c.totalAtendimentos}</div>
+      <button onclick="alternarVip('${c.cpf}', ${!c.vip})" class="text-[10px] font-bold bg-charcoal text-white px-3 py-1.5 rounded">${c.vip ? 'Remover VIP' : 'Marcar como VIP'}</button>
+    </div>`;
+}
+
+async function alternarVip(cpf, vip){
+  const r = await apiPost('marcarVip', { cpf, vip });
+  alert(r.ok ? r.mensagem : ('Erro: ' + r.erro));
+  buscarClienteAdmin();
+}
+
+// ============================================================
+// Retorno / Cancelados (sem sinal)
+// ============================================================
+async function carregarRetorno(){
+  const rCancel = await apiGet('listarClientesCancelados');
+  const elCancel = document.getElementById('listaCancelados');
+  if (rCancel.ok) {
+    elCancel.innerHTML = rCancel.clientes.map(c => `
+      <div class="bg-white rounded-xl border border-nude-200 p-3 text-xs flex items-center justify-between gap-2">
+        <div><strong>${c.nome}</strong><br>Faltou em ${c.data} às ${c.hora}</div>
+        <a target="_blank" href="https://wa.me/55${c.telefone.replace(/\\D/g,'')}?text=${encodeURIComponent('Oi ' + c.nome + '! Vimos que você não pôde comparecer ao seu horário no Studio 14. No seu próximo agendamento você não precisa pagar os R$ 30 de sinal :) Quer marcar um novo horário?')}"
+           class="text-[10px] font-bold bg-ok text-white px-2 py-1.5 rounded whitespace-nowrap"><i class="fa-brands fa-whatsapp mr-1"></i>WhatsApp</a>
+      </div>`).join('') || '<p class="text-charcoal/40 text-xs">Nenhum cliente nessa situação.</p>';
+  }
+
+  const rRetorno = await apiGet('listarRetorno');
+  const elRetorno = document.getElementById('listaRetorno');
+  if (rRetorno.ok) {
+    elRetorno.innerHTML = rRetorno.clientes.map(c => `
+      <div class="bg-white rounded-xl border border-nude-200 p-3 text-xs flex items-center justify-between gap-2">
+        <div><strong>${c.nome}</strong> ${c.vip ? '<span class="badge bg-gold-100 text-gold-700">VIP</span>' : ''}<br>${c.diasSemAtendimento} dias sem vir (última vez: ${c.ultimoAtendimento})</div>
+        <a target="_blank" href="https://wa.me/55${c.telefone.replace(/\\D/g,'')}?text=${encodeURIComponent('Oi ' + c.nome + '! Faz um tempinho que você não vem ao Studio 14 :) Bora marcar sua manutenção?')}"
+           class="text-[10px] font-bold bg-ok text-white px-2 py-1.5 rounded whitespace-nowrap"><i class="fa-brands fa-whatsapp mr-1"></i>WhatsApp</a>
+      </div>`).join('') || '<p class="text-charcoal/40 text-xs">Nenhum cliente de retorno no momento.</p>';
+  }
+}
+
+// ============================================================
+// Serviços
+// ============================================================
+async function carregarServicos(){
+  const r = await fetch(`${WEBAPP_URL}?action=listarServicos`).then(x=>x.json());
+  const el = document.getElementById('listaServicos');
+  if (!r.ok) { el.innerHTML = `<p class="p-3 text-warn text-xs">${r.erro}</p>`; return; }
+  el.innerHTML = r.servicos.map(s => `
+    <div class="p-3 text-xs flex items-center justify-between">
+      <div><strong>${s.nome}</strong> <span class="text-charcoal/40">(${s.categoria})</span></div>
+      <div class="ledger-num">${fmt(s.valor)} · ${s.duracaoMin} min</div>
+    </div>`).join('') || '<p class="p-3 text-charcoal/40 text-xs">Nenhum serviço cadastrado.</p>';
+}
+
+async function cadastrarServico(){
+  const nome = document.getElementById('novoServicoNome').value;
+  const categoria = document.getElementById('novoServicoCategoria').value;
+  const valor = document.getElementById('novoServicoValor').value;
+  const duracaoMin = document.getElementById('novoServicoDuracao').value;
+  if (!nome || !valor) { alert('Preencha ao menos nome e valor.'); return; }
+  const r = await apiPost('cadastrarServico', { nome, categoria, valor, duracaoMin });
+  alert(r.ok ? r.mensagem : ('Erro: ' + r.erro));
+  if (r.ok) { document.getElementById('novoServicoNome').value=''; document.getElementById('novoServicoValor').value=''; carregarServicos(); }
+}
+
+// ============================================================
+// Profissionais
+// ============================================================
+async function carregarProfissionais(){
+  const r = await apiGet('listarProfissionais');
+  const el = document.getElementById('listaProfissionais');
+  if (!r.ok) { el.innerHTML = `<p class="p-3 text-warn text-xs">${r.erro}</p>`; return; }
+  el.innerHTML = r.profissionais.map(p => `
+    <div class="p-3 text-xs flex items-center justify-between">
+      <div><strong>${p.nome}</strong> <span class="text-charcoal/40">(${p.especialidades || 'sem especialidade definida'})</span></div>
+      <div class="ledger-num">Comissão: ${p.comissaoPercent}%</div>
+    </div>`).join('') || '<p class="p-3 text-charcoal/40 text-xs">Nenhum profissional cadastrado.</p>';
+  popularSelectProfissionais(r.profissionais);
+}
+
+function popularSelectProfissionais(lista){
+  const sel = document.getElementById('novoUsuProfissional');
+  sel.innerHTML = lista.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+}
+
+async function cadastrarProfissional(){
+  const nome = document.getElementById('novoProfNome').value;
+  const especialidades = document.getElementById('novoProfEspecialidades').value;
+  const comissaoPercent = document.getElementById('novoProfComissao').value;
+  if (!nome) { alert('Preencha o nome.'); return; }
+  const r = await apiPost('cadastrarProfissional', { nome, especialidades, comissaoPercent });
+  alert(r.ok ? r.mensagem : ('Erro: ' + r.erro));
+  if (r.ok) { document.getElementById('novoProfNome').value=''; carregarProfissionais(); }
+}
+
+// ============================================================
+// Usuários (admin only)
+// ============================================================
+function toggleProfissionalSelect(){
+  const papel = document.getElementById('novoUsuPapel').value;
+  document.getElementById('novoUsuProfissional').classList.toggle('hidden', papel !== 'NailDesigner');
+}
+
+async function carregarUsuarios(){
+  if (SESSAO.papel !== 'Admin') return;
+  const r = await apiGet('listarUsuarios');
+  const el = document.getElementById('listaUsuarios');
+  if (!r.ok) { el.innerHTML = `<p class="p-3 text-warn text-xs">${r.erro}</p>`; return; }
+  el.innerHTML = r.usuarios.map(u => `
+    <div class="p-3 text-xs flex items-center justify-between">
+      <div><strong>${u.nome}</strong> (${u.login})</div>
+      <span class="badge ${u.papel==='Admin'?'bg-gold-100 text-gold-700':'bg-nude-100 text-charcoal/60'}">${u.papel}</span>
+    </div>`).join('') || '<p class="p-3 text-charcoal/40 text-xs">Nenhum usuário cadastrado.</p>';
+}
+
+async function cadastrarUsuario(){
+  const login = document.getElementById('novoUsuLogin').value;
+  const senha = document.getElementById('novoUsuSenha').value;
+  const nome = document.getElementById('novoUsuNome').value;
+  const papel = document.getElementById('novoUsuPapel').value;
+  const profissionalId = papel === 'NailDesigner' ? document.getElementById('novoUsuProfissional').value : '';
+  if (!login || !senha || !nome) { alert('Preencha login, senha e nome.'); return; }
+  const r = await apiPost('cadastrarUsuario', { login, senha, nome, papel, profissionalId });
+  alert(r.ok ? r.mensagem : ('Erro: ' + r.erro));
+  if (r.ok) { document.getElementById('novoUsuLogin').value=''; document.getElementById('novoUsuSenha').value=''; document.getElementById('novoUsuNome').value=''; carregarUsuarios(); }
+}
+</script>
+</body>
+</html>
