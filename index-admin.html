@@ -160,7 +160,7 @@ tailwind.config = { theme: { extend: {
       <div class="bg-white rounded-2xl border border-nude-200 p-4 mb-4">
         <h3 class="font-bold mb-2">Novo cliente</h3>
         <div class="grid sm:grid-cols-5 gap-2">
-          <input id="ncCpf" placeholder="CPF" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+          <input id="ncCpf" placeholder="CPF (opcional)" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
           <input id="ncNome" placeholder="Nome completo" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
           <input id="ncTel" placeholder="Telefone / WhatsApp" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
           <input id="ncEmail" type="email" placeholder="E-mail (opcional)" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
@@ -594,7 +594,7 @@ function renderizarClienteEditavel(c){
   el.innerHTML = `
     <div class="space-y-2">
       <div class="flex items-center gap-2"><strong>${c.nome}</strong> ${c.vip ? '<span class="badge bg-gold-100 text-gold-700">VIP</span>' : ''}</div>
-      <div class="text-charcoal/50">CPF: ${c.cpf} · Último atendimento: ${c.ultimoAtendimento || 'nunca'} · Total: ${c.totalAtendimentos}</div>
+      <div class="text-charcoal/50">CPF: ${cpfTxt(c.cpf)} · Último atendimento: ${c.ultimoAtendimento || 'nunca'} · Total: ${c.totalAtendimentos}</div>
       <div class="grid sm:grid-cols-3 gap-2 pt-2">
         <input id="editClienteNome" value="${c.nome}" placeholder="Nome" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
         <input id="editClienteTelefone" value="${c.telefone}" placeholder="Telefone" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
@@ -640,7 +640,7 @@ async function carregarClientes(){
     <div class="p-3 text-sm flex items-center justify-between gap-2">
       <div>
         <strong>${c.nome}</strong> ${c.vip ? '<span class="badge bg-gold-100 text-gold-700">VIP</span>' : ''}<br>
-        <span class="text-charcoal/40">CPF: ${c.cpf} · Tel: ${c.telefone} · Último atendimento: ${c.ultimoAtendimento || 'nunca'}</span>
+        <span class="text-charcoal/40">CPF: ${cpfTxt(c.cpf)} · Tel: ${c.telefone} · Último atendimento: ${c.ultimoAtendimento || 'nunca'}</span>
       </div>
       <button onclick="document.getElementById('buscaClienteCpf').value='${c.cpf}'; buscarClienteAdmin(); window.scrollTo({top:0,behavior:'smooth'});" class="text-sm font-bold border border-nude-300 px-3 py-1.5 rounded shrink-0">Editar</button>
     </div>`).join('') || '<p class="p-3 text-charcoal/40 text-sm">Nenhum cliente cadastrado ainda.</p>';
@@ -829,6 +829,7 @@ async function cadastrarUsuario(){
 // ============================================================
 // v1.4 — helpers
 // ============================================================
+function cpfTxt(c){ c=String(c||''); return c.length===11 ? c : 'sem CPF'; }
 function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function msg(r){ alert(r.ok ? r.mensagem : ('Erro: ' + r.erro)); return r.ok; }
 function hojeYmd(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
@@ -897,7 +898,7 @@ function irParaAba(tab){
 // ============================================================
 async function cadastrarClienteAdmin(){
   const dados = { cpf: ncCpf.value, nome: ncNome.value, telefone: ncTel.value, email: ncEmail.value, vip: ncVip.checked };
-  if (!dados.cpf || !dados.nome || !dados.telefone) { alert('Preencha CPF, nome e telefone.'); return; }
+  if (!dados.nome || !dados.telefone) { alert('Preencha nome e telefone (CPF é opcional).'); return; }
   const r = await apiPost('cadastrarCliente', dados);
   if (msg(r)) { ncCpf.value = ncNome.value = ncTel.value = ncEmail.value = ''; ncVip.checked = false; carregarClientes(); }
 }
