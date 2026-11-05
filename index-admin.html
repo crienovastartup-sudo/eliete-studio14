@@ -582,8 +582,7 @@ async function finalizarAtendimento(id){
 // ============================================================
 async function buscarClienteAdmin(){
   const cpf = document.getElementById('buscaClienteCpf').value;
-  const resp = await fetch(`${WEBAPP_URL}?action=buscarCliente&cpf=${encodeURIComponent(cpf)}`);
-  const resultado = await resp.json();
+  const resultado = await apiGet('buscarClienteAdmin', { cpf });
   const el = document.getElementById('clienteResultado');
   if (!resultado.ok || !resultado.encontrado) { el.innerHTML = '<p class="text-charcoal/50">Cliente não encontrado.</p>'; return; }
   renderizarClienteEditavel(resultado.cliente);
