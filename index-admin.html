@@ -15,30 +15,11 @@ tailwind.config = { theme: { extend: {
 }}}
 </script>
 <style>
+  html{ font-size:17px; }
   .ledger-num{ font-family:'JetBrains Mono',monospace; font-variant-numeric: tabular-nums; }
   .tab-active{ background:#1A1817; color:#F3DB9A; }
   .badge{ font-size:11px; font-weight:700; text-transform:uppercase; padding:2px 8px; border-radius:9999px; }
   ::-webkit-scrollbar{ height:6px; width:6px; } ::-webkit-scrollbar-thumb{ background:#D4AF37; border-radius:4px; }
-
-  /* ===== Menu lateral (sidebar) ===== */
-  /* :not(.hidden) garante que isso nunca vença o "hidden" do Tailwind (evita
-     que um item admin-only apareça antes do login terminar de checar o papel). */
-  .sidebar-item:not(.hidden){ display:flex; align-items:center; gap:.75rem; width:100%; padding:.6rem .75rem; border-radius:.75rem;
-    font-size:.875rem; font-weight:700; color:#DDD3C6; text-align:left; white-space:nowrap; overflow:hidden; }
-  .sidebar-item:hover{ background:rgba(255,255,255,.06); }
-  .sidebar-item.tab-active{ background:rgba(212,175,55,.16); color:#F3DB9A; }
-  .sidebar-icon{ width:1.1rem; text-align:center; flex-shrink:0; }
-  #sidebar{ transition: width .18s ease, transform .18s ease; }
-  #sidebar.sidebar-collapsed{ width:5rem; }
-  #sidebar.sidebar-collapsed .sidebar-label,
-  #sidebar.sidebar-collapsed #sidebarBrand,
-  #sidebar.sidebar-collapsed #sidebarCollapseLabel{ display:none; }
-  #sidebar.sidebar-collapsed .sidebar-item{ justify-content:center; padding-left:0; padding-right:0; }
-  #sidebar.sidebar-collapsed .sidebar-item .sidebar-icon{ margin:0; }
-  @media (max-width: 1023px){
-    #sidebar{ position:fixed; top:0; bottom:0; left:0; transform:translateX(-100%); }
-    #sidebar.sidebar-open{ transform:translateX(0); }
-  }
 </style>
 </head>
 <body class="bg-nude-50 text-charcoal font-sans">
@@ -56,8 +37,8 @@ tailwind.config = { theme: { extend: {
   // A versão do index.html precisa ser copiada daqui (VERSAO_INDEX
   // dentro do próprio index.html) sempre que você atualizar os dois juntos.
   // ============================================================
-  const VERSAO_ADMIN = '1.3.0 · 22/09/2026';
-  const VERSAO_INDEX_PUBLICO = '1.2.0 · 22/09/2026';
+  const VERSAO_ADMIN = '1.4.0 · 05/11/2026';
+  const VERSAO_INDEX_PUBLICO = '1.4.0 · 05/11/2026';
 
   async function mostrarVersoes() {
     const el = document.getElementById('versoesInfo');
@@ -87,99 +68,41 @@ tailwind.config = { theme: { extend: {
 </div>
 
 <!-- ===== APP ===== -->
-<div id="app" class="hidden lg:flex">
+<div id="app" class="hidden">
 
-  <!-- Menu lateral -->
-  <aside id="sidebar" class="w-64 shrink-0 bg-charcoal text-nude-100 border-r border-gold-500/20 flex flex-col lg:sticky lg:top-0 lg:h-screen z-40">
-    <div class="h-16 flex items-center gap-3 px-5 border-b border-gold-500/20 shrink-0 overflow-hidden">
-      <div class="w-9 h-9 rounded-full bg-gold-500 text-charcoal flex items-center justify-center font-serif font-bold shrink-0">14</div>
-      <span id="sidebarBrand" class="font-serif text-lg font-bold tracking-wide whitespace-nowrap">Painel Interno</span>
-    </div>
-    <nav id="sidebarNav" class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-      <button class="tab-btn sidebar-item admin-only hidden" data-tab="dashboard"><i class="fa-solid fa-gauge-high sidebar-icon"></i><span class="sidebar-label">Dashboard</span></button>
-      <button class="tab-btn sidebar-item" data-tab="agendamentos" data-perm="agendamentos"><i class="fa-solid fa-calendar-check sidebar-icon"></i><span class="sidebar-label">Agendamentos</span></button>
-      <button class="tab-btn sidebar-item" data-tab="atendimentos" data-perm="atendimentos"><i class="fa-solid fa-hand-sparkles sidebar-icon"></i><span class="sidebar-label">Atendimentos</span></button>
-      <button class="tab-btn sidebar-item" data-tab="clientes" data-perm="clientes"><i class="fa-solid fa-users sidebar-icon"></i><span class="sidebar-label">Clientes</span></button>
-      <button class="tab-btn sidebar-item" data-tab="retorno" data-perm="retorno"><i class="fa-solid fa-rotate-left sidebar-icon"></i><span class="sidebar-label">Retorno / Sem Sinal</span></button>
-      <button class="tab-btn sidebar-item" data-tab="servicos" data-perm="servicos"><i class="fa-solid fa-list-check sidebar-icon"></i><span class="sidebar-label">Serviços</span></button>
-      <button class="tab-btn sidebar-item" data-tab="profissionais" data-perm="profissionais"><i class="fa-solid fa-user-tie sidebar-icon"></i><span class="sidebar-label">Profissionais</span></button>
-      <button class="tab-btn sidebar-item admin-only hidden" data-tab="mesas"><i class="fa-solid fa-table-cells sidebar-icon"></i><span class="sidebar-label">Mesas</span></button>
-      <button class="tab-btn sidebar-item admin-only hidden" data-tab="usuarios"><i class="fa-solid fa-user-shield sidebar-icon"></i><span class="sidebar-label">Usuários</span></button>
-    </nav>
-    <div class="p-3 border-t border-gold-500/20 shrink-0">
-      <div class="hidden lg:block">
-        <button onclick="toggleSidebarCollapse()" class="sidebar-item justify-center text-gold-400">
-          <i id="sidebarCollapseIcon" class="fa-solid fa-angles-left sidebar-icon"></i>
-          <span id="sidebarCollapseLabel" class="sidebar-label">Recolher menu</span>
-        </button>
+  <!-- Header -->
+  <header class="sticky top-0 z-30 bg-charcoal text-nude-100 border-b border-gold-500/20">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-gold-500 text-charcoal flex items-center justify-center font-serif font-bold">14</div>
+        <span class="font-serif text-lg font-bold tracking-wide">Painel Interno</span>
       </div>
-      <div class="lg:hidden">
-        <button onclick="fecharSidebarMobile()" class="sidebar-item justify-center text-gold-400">
-          <i class="fa-solid fa-xmark sidebar-icon"></i><span class="sidebar-label">Fechar menu</span>
-        </button>
+      <div class="flex items-center gap-4 text-sm text-nude-300">
+        <span id="usuarioLogado"></span>
+        <button onclick="fazerLogout()" class="text-gold-400 hover:text-gold-300"><i class="fa-solid fa-arrow-right-from-bracket mr-1"></i>Sair</button>
       </div>
     </div>
-  </aside>
+  </header>
 
-  <!-- Fundo escurecido ao abrir o menu no celular -->
-  <div id="sidebarOverlay" onclick="fecharSidebarMobile()" class="fixed inset-0 bg-black/40 z-30 hidden lg:hidden"></div>
+  <!-- Abas -->
+  <nav class="max-w-7xl mx-auto px-6 mt-6 flex gap-2 overflow-x-auto pb-2">
+    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap" data-tab="dashboard" data-perm="dashboard">Dashboard</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap" data-tab="agendamentos" data-perm="agendamentos">Agendamentos</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap" data-tab="atendimentos" data-perm="atendimentos">Atendimentos</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap" data-tab="clientes" data-perm="clientes">Clientes</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap" data-tab="retorno" data-perm="retorno">Retorno / Sem Sinal</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap" data-tab="servicos" data-perm="servicos">Serviços</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap" data-tab="profissionais" data-perm="profissionais">Profissionais</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap" data-tab="financeiro" data-perm="financeiro">Financeiro</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap" data-tab="estoque" data-perm="estoque">Estoque</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap" data-tab="produtos" data-perm="produtos">Produtos (Loja)</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap" data-tab="clube" data-perm="clube">Clube</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap admin-only hidden" data-tab="mesas">Mesas</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap admin-only hidden" data-tab="usuarios">Usuários</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap admin-only hidden" data-tab="auditoria">Auditoria</button>
+  </nav>
 
-  <div class="flex-1 min-w-0">
-    <!-- Header -->
-    <header class="sticky top-0 z-20 bg-charcoal text-nude-100 border-b border-gold-500/20">
-      <div class="px-4 lg:px-6 h-16 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <button onclick="abrirSidebarMobile()" class="lg:hidden text-gold-400 text-lg px-1"><i class="fa-solid fa-bars"></i></button>
-          <span id="headerTitulo" class="font-serif text-lg font-bold tracking-wide">Painel Interno</span>
-        </div>
-        <div class="flex items-center gap-4 text-sm text-nude-300">
-          <span id="usuarioLogado"></span>
-          <button onclick="fazerLogout()" class="text-gold-400 hover:text-gold-300"><i class="fa-solid fa-arrow-right-from-bracket mr-1"></i>Sair</button>
-        </div>
-      </div>
-    </header>
-
-  <main class="max-w-7xl mx-auto px-4 lg:px-6 pb-16 mt-4 space-y-6">
-
-    <!-- Dashboard -->
-    <div class="tab-content hidden" id="tab-dashboard">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="font-serif text-xl font-bold">Dashboard</h2>
-        <button onclick="carregarDashboard()" class="text-sm font-bold border border-nude-300 text-charcoal px-3 py-1.5 rounded-lg"><i class="fa-solid fa-rotate mr-1"></i>Atualizar</button>
-      </div>
-
-      <div class="grid sm:grid-cols-3 gap-4 mb-6">
-        <div class="bg-white rounded-2xl border border-nude-200 p-4">
-          <p class="text-xs uppercase tracking-wider text-charcoal/40 font-bold mb-1">Faturamento de hoje</p>
-          <p id="dashFaturamentoHoje" class="font-serif text-3xl font-bold ledger-num">—</p>
-        </div>
-        <div class="bg-white rounded-2xl border border-nude-200 p-4">
-          <p class="text-xs uppercase tracking-wider text-charcoal/40 font-bold mb-1">Clientes atendidos hoje</p>
-          <p id="dashClientesHoje" class="font-serif text-3xl font-bold ledger-num">—</p>
-        </div>
-        <div class="bg-white rounded-2xl border border-nude-200 p-4">
-          <p class="text-xs uppercase tracking-wider text-charcoal/40 font-bold mb-1">Ticket médio hoje</p>
-          <p id="dashTicketMedioHoje" class="font-serif text-3xl font-bold ledger-num">—</p>
-        </div>
-      </div>
-
-      <div class="grid lg:grid-cols-2 gap-6">
-        <div class="bg-white rounded-2xl border border-nude-200 p-4">
-          <h3 class="font-serif text-lg font-bold mb-3">Previsão de faturamento (próximas semanas)</h3>
-          <div id="dashPrevisaoSemanas" class="space-y-3"></div>
-        </div>
-
-        <div class="bg-white rounded-2xl border border-nude-200 p-4">
-          <h3 class="font-serif text-lg font-bold mb-3">Serviços mais utilizados</h3>
-          <div id="dashServicosMaisUtilizados" class="divide-y divide-nude-100"></div>
-        </div>
-
-        <div class="bg-white rounded-2xl border border-nude-200 p-4 lg:col-span-2">
-          <h3 class="font-serif text-lg font-bold mb-3">Ranking de Nail Designers</h3>
-          <div id="dashRankingProfissionais" class="divide-y divide-nude-100"></div>
-        </div>
-      </div>
-    </div>
+  <main class="max-w-7xl mx-auto px-6 pb-16 mt-4 space-y-6">
 
     <!-- Agendamentos -->
     <div class="tab-content" id="tab-agendamentos">
@@ -233,6 +156,17 @@ tailwind.config = { theme: { extend: {
         <input id="buscaClienteCpf" placeholder="Buscar por CPF" class="text-sm border border-nude-300 rounded-lg px-3 py-1.5">
         <button onclick="buscarClienteAdmin()" class="text-sm font-bold bg-charcoal text-white px-3 py-1.5 rounded-lg">Buscar</button>
         <button onclick="carregarClientes()" class="text-sm font-bold border border-nude-300 text-charcoal px-3 py-1.5 rounded-lg">Ver todos</button>
+      </div>
+      <div class="bg-white rounded-2xl border border-nude-200 p-4 mb-4">
+        <h3 class="font-bold mb-2">Novo cliente</h3>
+        <div class="grid sm:grid-cols-5 gap-2">
+          <input id="ncCpf" placeholder="CPF" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+          <input id="ncNome" placeholder="Nome completo" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+          <input id="ncTel" placeholder="Telefone / WhatsApp" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+          <input id="ncEmail" type="email" placeholder="E-mail (opcional)" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+          <label class="text-sm flex items-center gap-2"><input id="ncVip" type="checkbox"> VIP</label>
+          <button onclick="cadastrarClienteAdmin()" class="text-sm font-bold bg-charcoal text-white px-3 py-2 rounded-lg sm:col-span-5">Cadastrar cliente</button>
+        </div>
       </div>
       <div id="clienteResultado" class="bg-white rounded-2xl border border-nude-200 p-4 text-sm mb-4"></div>
       <div id="listaClientes" class="bg-white rounded-2xl border border-nude-200 divide-y divide-nude-100"></div>
@@ -301,18 +235,130 @@ tailwind.config = { theme: { extend: {
           <option value="NailDesigner">Nail Designer</option>
         </select>
         <select id="novoUsuProfissional" class="text-sm border border-nude-300 rounded-lg px-3 py-2 hidden"></select>
-        <input id="novoUsuPermissoes" placeholder="Permissões (ex: agendamentos,atendimentos,clientes)" value="agendamentos,atendimentos,clientes" class="text-sm border border-nude-300 rounded-lg px-3 py-2 md:col-span-2">
+        <div id="novoUsuPermissoes" class="md:col-span-3 flex flex-wrap gap-x-4 gap-y-1 text-sm border border-nude-300 rounded-lg px-3 py-2"></div>
         <input id="novoUsuCpf" placeholder="CPF (opcional)" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
         <input id="novoUsuEmail" type="email" placeholder="E-mail (opcional)" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
         <input id="novoUsuFoto" type="file" accept="image/*" class="text-sm border border-nude-300 rounded-lg px-3 py-2 bg-white">
         <button onclick="cadastrarUsuario()" class="text-sm font-bold bg-charcoal text-white px-3 py-2 rounded-lg md:col-span-3">Cadastrar Usuário</button>
       </div>
-      <p class="text-xs text-charcoal/40 mb-2">Abas disponíveis para permissão: agendamentos, atendimentos, clientes, retorno, servicos, profissionais. Admin sempre vê tudo.</p>
+      <p class="text-xs text-charcoal/40 mb-2">Marque as telas que o usuário pode ver. A permissão é validada também no servidor. Admin sempre vê tudo.</p>
       <div id="listaUsuarios" class="bg-white rounded-2xl border border-nude-200 divide-y divide-nude-100"></div>
     </div>
 
+
+    <!-- Dashboard -->
+    <div class="tab-content hidden" id="tab-dashboard">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h2 class="font-serif text-2xl font-bold">Dashboard gerencial</h2>
+        <label class="text-sm text-charcoal/60">Período dos rankings:
+          <select id="dashDias" onchange="carregarDashboard()" class="text-sm border border-nude-300 rounded-lg px-2 py-1.5 ml-1">
+            <option value="7">7 dias</option><option value="30" selected>30 dias</option><option value="90">90 dias</option><option value="365">12 meses</option>
+          </select>
+        </label>
+      </div>
+      <div id="dashKpis" class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4"></div>
+      <div id="dashAlertas" class="mb-4 grid sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
+      <div class="grid lg:grid-cols-2 gap-4">
+        <div class="bg-white rounded-2xl border border-nude-200 p-4"><h3 class="font-bold mb-3">Faturamento — últimos 14 dias</h3><div id="dashSerie"></div></div>
+        <div class="bg-white rounded-2xl border border-nude-200 p-4"><h3 class="font-bold mb-3">Previsão — próximas 4 semanas</h3><div id="dashPrevisao"></div><p class="text-xs text-charcoal/40 mt-2">Soma dos agendamentos ainda abertos (valor do serviço).</p></div>
+        <div class="bg-white rounded-2xl border border-nude-200 p-4"><h3 class="font-bold mb-3">Serviços mais utilizados</h3><div id="dashServicos"></div></div>
+        <div class="bg-white rounded-2xl border border-nude-200 p-4"><h3 class="font-bold mb-3">Ranking de Nail Designers</h3><div id="dashProfs"></div></div>
+      </div>
+    </div>
+
+    <!-- Financeiro -->
+    <div class="tab-content hidden" id="tab-financeiro">
+      <div class="flex items-center gap-3 mb-3 flex-wrap">
+        <h2 class="font-serif text-2xl font-bold">Financeiro</h2>
+        <select id="finPeriodo" onchange="carregarFinanceiro()" class="text-sm border border-nude-300 rounded-lg px-2 py-1.5">
+          <option value="dia">Caixa do dia</option><option value="mes" selected>Caixa do mês</option><option value="ano">Caixa do ano</option>
+        </select>
+        <input id="finRef" type="date" onchange="carregarFinanceiro()" class="text-sm border border-nude-300 rounded-lg px-2 py-1.5">
+      </div>
+      <div id="finResumo" class="grid grid-cols-2 lg:grid-cols-6 gap-3 mb-4"></div>
+      <div class="grid lg:grid-cols-3 gap-4 mb-4">
+        <div class="bg-white rounded-2xl border border-nude-200 p-4 lg:col-span-1"><h3 class="font-bold mb-2">Por categoria</h3><div id="finCategorias" class="text-sm"></div></div>
+        <div class="bg-white rounded-2xl border border-nude-200 p-4 lg:col-span-2">
+          <h3 class="font-bold mb-2">Novo lançamento (conta a pagar / receber)</h3>
+          <div class="grid sm:grid-cols-3 gap-2">
+            <select id="finTipo" class="text-sm border border-nude-300 rounded-lg px-3 py-2"><option value="Pagar">A pagar (despesa)</option><option value="Receber">A receber (receita)</option></select>
+            <select id="finCategoria" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+              <option value="Fixa">Despesa fixa</option><option value="Variavel">Despesa variável</option><option value="Servico">Serviço</option><option value="Curso">Curso</option><option value="Produto">Produto</option><option value="Clube">Clube</option><option value="Outro">Outro</option>
+            </select>
+            <input id="finDescricao" placeholder="Descrição (ex: Aluguel)" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+            <input id="finValor" type="number" step="0.01" placeholder="Valor (R$)" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+            <input id="finVenc" type="date" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+            <input id="finRepetir" type="number" min="1" max="36" value="1" title="Repetir por quantos meses (despesa fixa mensal)" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+            <label class="text-sm flex items-center gap-2"><input id="finPago" type="checkbox"> Já está pago</label>
+            <button onclick="salvarLancamento()" class="text-sm font-bold bg-charcoal text-white px-3 py-2 rounded-lg sm:col-span-2">Lançar</button>
+          </div>
+          <p class="text-xs text-charcoal/40 mt-2">O último campo repete o lançamento por N meses (use para aluguel, internet etc.). Serviços finalizados e vendas de produtos entram no caixa automaticamente.</p>
+        </div>
+      </div>
+      <div id="finLista" class="bg-white rounded-2xl border border-nude-200 divide-y divide-nude-100"></div>
+    </div>
+
+    <!-- Estoque -->
+    <div class="tab-content hidden" id="tab-estoque">
+      <h2 class="font-serif text-2xl font-bold mb-3">Estoque de material profissional</h2>
+      <div id="estAlerta" class="mb-3"></div>
+      <div class="grid md:grid-cols-4 gap-2 mb-4 bg-white rounded-2xl border border-nude-200 p-4">
+        <input id="estItem" placeholder="Item (ex: Gel construtor rosa)" class="text-sm border border-nude-300 rounded-lg px-3 py-2 md:col-span-2">
+        <input id="estCategoria" placeholder="Categoria" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <input id="estUnidade" placeholder="Unidade (un, ml, g)" value="un" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <input id="estQtd" type="number" placeholder="Quantidade atual" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <input id="estMin" type="number" placeholder="Estoque mínimo (alerta)" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <input id="estCusto" type="number" step="0.01" placeholder="Custo unitário (R$)" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <button onclick="salvarItemEstoque()" id="estBtn" class="text-sm font-bold bg-charcoal text-white px-3 py-2 rounded-lg">Cadastrar item</button>
+      </div>
+      <div id="estLista" class="bg-white rounded-2xl border border-nude-200 divide-y divide-nude-100"></div>
+    </div>
+
+    <!-- Produtos (loja) -->
+    <div class="tab-content hidden" id="tab-produtos">
+      <h2 class="font-serif text-2xl font-bold mb-3">Produtos para venda (aparecem no site)</h2>
+      <div class="grid md:grid-cols-4 gap-2 mb-2 bg-white rounded-2xl border border-nude-200 p-4">
+        <input id="prNome" placeholder="Nome do produto" class="text-sm border border-nude-300 rounded-lg px-3 py-2 md:col-span-2">
+        <input id="prPreco" type="number" step="0.01" placeholder="Preço (R$)" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <input id="prEstoque" type="number" placeholder="Estoque" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <input id="prDescricao" placeholder="Descrição curta" class="text-sm border border-nude-300 rounded-lg px-3 py-2 md:col-span-2">
+        <input id="prFoto" placeholder="URL da foto (ex: assets/images/produto.jpg)" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <input id="prMin" type="number" placeholder="Estoque mínimo" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <label class="text-sm flex items-center gap-2"><input id="prAtivo" type="checkbox" checked> Visível no site</label>
+        <button onclick="salvarProduto()" id="prBtn" class="text-sm font-bold bg-charcoal text-white px-3 py-2 rounded-lg md:col-span-3">Cadastrar produto</button>
+      </div>
+      <p class="text-xs text-charcoal/40 mb-3">Produto só aparece no site se estiver visível e com estoque maior que zero. "Vender" baixa o estoque e lança a receita no Financeiro.</p>
+      <div id="prLista" class="bg-white rounded-2xl border border-nude-200 divide-y divide-nude-100"></div>
+    </div>
+
+    <!-- Clube -->
+    <div class="tab-content hidden" id="tab-clube">
+      <h2 class="font-serif text-2xl font-bold mb-1">Clube de clientes (pacotes pré-pagos)</h2>
+      <p id="clubeRegras" class="text-sm text-charcoal/60 mb-3"></p>
+      <div class="grid md:grid-cols-4 gap-2 mb-2 bg-white rounded-2xl border border-nude-200 p-4">
+        <input id="ckCpf" placeholder="CPF do cliente (já cadastrado)" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <select id="ckMeses" onchange="previewPacote()" class="text-sm border border-nude-300 rounded-lg px-3 py-2"><option value="6">6 meses</option><option value="12">12 meses</option></select>
+        <input id="ckValor" type="number" step="0.01" oninput="previewPacote()" placeholder="Valor avulso do atendimento (R$)" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <input id="ckAtend" type="number" min="1" oninput="previewPacote()" placeholder="Atendimentos por mês" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <label class="text-sm flex items-center gap-2"><input id="ckPago" type="checkbox"> Pagamento já recebido</label>
+        <div id="ckPreview" class="text-sm font-bold md:col-span-2 self-center"></div>
+        <button onclick="criarPacote()" class="text-sm font-bold bg-charcoal text-white px-3 py-2 rounded-lg">Criar pacote</button>
+      </div>
+      <div id="ckLista" class="bg-white rounded-2xl border border-nude-200 divide-y divide-nude-100"></div>
+    </div>
+
+    <!-- Auditoria (admin) -->
+    <div class="tab-content hidden" id="tab-auditoria">
+      <h2 class="font-serif text-2xl font-bold mb-3">Auditoria — quem fez o quê</h2>
+      <div class="bg-white rounded-2xl border border-nude-200 overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-nude-100 text-charcoal/60 uppercase tracking-wider text-xs"><tr><th class="p-3 text-left">Quando</th><th class="p-3 text-left">Usuário</th><th class="p-3 text-left">Ação</th><th class="p-3 text-left">Detalhe</th></tr></thead>
+          <tbody id="tbodyAuditoria"></tbody>
+        </table>
+      </div>
+    </div>
+
   </main>
-  </div>
 </div>
 
 <script>
@@ -320,37 +366,6 @@ tailwind.config = { theme: { extend: {
 // SESSÃO
 // ============================================================
 let SESSAO = null; // { token, nome, papel, profissionalId }
-
-const NOMES_ABAS = {
-  dashboard: 'Dashboard', agendamentos: 'Agendamentos', atendimentos: 'Atendimentos',
-  clientes: 'Clientes', retorno: 'Retorno / Sem Sinal', servicos: 'Serviços',
-  profissionais: 'Profissionais', mesas: 'Mesas', usuarios: 'Usuários'
-};
-
-// ============================================================
-// Menu lateral (sidebar)
-// ============================================================
-function abrirSidebarMobile(){
-  document.getElementById('sidebar').classList.add('sidebar-open');
-  document.getElementById('sidebarOverlay').classList.remove('hidden');
-}
-function fecharSidebarMobile(){
-  document.getElementById('sidebar').classList.remove('sidebar-open');
-  document.getElementById('sidebarOverlay').classList.add('hidden');
-}
-function toggleSidebarCollapse(){
-  const colapsado = document.getElementById('sidebar').classList.toggle('sidebar-collapsed');
-  document.getElementById('sidebarCollapseIcon').className = 'fa-solid sidebar-icon ' + (colapsado ? 'fa-angles-right' : 'fa-angles-left');
-  localStorage.setItem('studio14_sidebar_collapsed', colapsado ? '1' : '0');
-}
-(function restaurarSidebarCollapse(){
-  if (localStorage.getItem('studio14_sidebar_collapsed') === '1') {
-    window.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('sidebar').classList.add('sidebar-collapsed');
-      document.getElementById('sidebarCollapseIcon').className = 'fa-solid sidebar-icon fa-angles-right';
-    });
-  }
-})();
 
 async function fazerLogin(){
   const usuario = document.getElementById('loginUsuario').value;
@@ -408,7 +423,6 @@ function entrarNoApp(){
   if (primeiraAba) {
     primeiraAba.classList.add('tab-active');
     document.getElementById('tab-' + primeiraAba.dataset.tab).classList.remove('hidden');
-    document.getElementById('headerTitulo').textContent = NOMES_ABAS[primeiraAba.dataset.tab] || 'Painel Interno';
     carregarAbaAtual(primeiraAba.dataset.tab);
   }
 }
@@ -431,14 +445,17 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     btn.classList.add('tab-active');
     document.querySelectorAll('.tab-content').forEach(c=>c.classList.add('hidden'));
     document.getElementById('tab-'+btn.dataset.tab).classList.remove('hidden');
-    document.getElementById('headerTitulo').textContent = NOMES_ABAS[btn.dataset.tab] || 'Painel Interno';
     carregarAbaAtual(btn.dataset.tab);
-    fecharSidebarMobile();
   });
 });
 
 function carregarAbaAtual(tab){
   if (tab === 'dashboard') carregarDashboard();
+  if (tab === 'financeiro') carregarFinanceiro();
+  if (tab === 'estoque') carregarEstoque();
+  if (tab === 'produtos') carregarProdutos();
+  if (tab === 'clube') carregarClube();
+  if (tab === 'auditoria') carregarAuditoria();
   if (tab === 'agendamentos') carregarAgendamentos();
   if (tab === 'atendimentos') carregarAtendimentos();
   if (tab === 'clientes') carregarClientes();
@@ -466,37 +483,6 @@ async function apiPost(action, dados){
   dados.token = SESSAO ? SESSAO.token : '';
   const resp = await fetch(WEBAPP_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(dados) });
   return resp.json();
-}
-
-// ============================================================
-// Dashboard
-// ============================================================
-async function carregarDashboard(){
-  const r = await apiGet('dashboard');
-  if (!r.ok) { alert('Erro ao carregar dashboard: ' + r.erro); return; }
-
-  document.getElementById('dashFaturamentoHoje').textContent = fmt(r.faturamentoHoje);
-  document.getElementById('dashClientesHoje').textContent = r.clientesAtendidosHoje;
-  const ticketMedio = r.clientesAtendidosHoje > 0 ? r.faturamentoHoje / r.clientesAtendidosHoje : 0;
-  document.getElementById('dashTicketMedioHoje').textContent = fmt(ticketMedio);
-
-  const maxSemana = Math.max(1, ...r.previsaoSemanas.map(s => s.valor));
-  document.getElementById('dashPrevisaoSemanas').innerHTML = r.previsaoSemanas.map(s => `
-    <div>
-      <div class="flex justify-between text-sm mb-1"><span>${s.label}</span><span class="ledger-num font-bold">${fmt(s.valor)}</span></div>
-      <div class="h-2 rounded-full bg-nude-100 overflow-hidden"><div class="h-full bg-gold-500" style="width:${Math.round((s.valor/maxSemana)*100)}%"></div></div>
-    </div>`).join('') || '<p class="text-charcoal/40 text-sm">Sem agendamentos futuros ainda.</p>';
-
-  document.getElementById('dashServicosMaisUtilizados').innerHTML = r.servicosMaisUtilizados.map(s => `
-    <div class="py-2 flex items-center justify-between text-sm">
-      <span>${s.nome}</span><span class="ledger-num font-bold">${s.qtd}x</span>
-    </div>`).join('') || '<p class="text-charcoal/40 text-sm py-2">Sem atendimentos registrados ainda.</p>';
-
-  document.getElementById('dashRankingProfissionais').innerHTML = r.rankingProfissionais.map((p, i) => `
-    <div class="py-2 flex items-center justify-between text-sm">
-      <span><span class="text-charcoal/40 mr-2">#${i+1}</span><strong>${p.nome}</strong></span>
-      <span class="text-right"><span class="ledger-num font-bold">${p.qtd}</span> atend. · <span class="ledger-num">${fmt(p.valor)}</span></span>
-    </div>`).join('') || '<p class="text-charcoal/40 text-sm py-2">Sem atendimentos registrados ainda.</p>';
 }
 
 // ============================================================
@@ -693,10 +679,12 @@ async function carregarServicos(){
   const r = await fetch(`${WEBAPP_URL}?action=listarServicos`).then(x=>x.json());
   const el = document.getElementById('listaServicos');
   if (!r.ok) { el.innerHTML = `<p class="p-3 text-warn text-sm">${r.erro}</p>`; return; }
-  el.innerHTML = r.servicos.map(s => `
-    <div class="p-3 text-sm flex items-center justify-between">
-      <div><strong>${s.nome}</strong> <span class="text-charcoal/40">(${s.categoria})</span></div>
-      <div class="ledger-num">${fmt(s.valor)} · ${s.duracaoMin} min</div>
+  SERVICOS_CACHE = r.servicos;
+  el.innerHTML = r.servicos.map((s, i) => `
+    <div class="p-3 text-sm flex items-center justify-between gap-2 flex-wrap">
+      <div><strong>${esc(s.nome)}</strong> <span class="text-charcoal/40">(${esc(s.categoria)})</span></div>
+      <div class="flex items-center gap-2"><span class="ledger-num">${fmt(s.valor)} · ${s.duracaoMin} min</span>
+        ${SESSAO.papel === 'Admin' ? `<button onclick="editarServicoForm(${i})" class="text-xs font-bold border border-nude-300 px-2 py-1 rounded">Editar</button><button onclick="desativarServico(${i})" class="text-xs font-bold bg-warn text-white px-2 py-1 rounded">Desativar</button>` : ''}</div>
     </div>`).join('') || '<p class="p-3 text-charcoal/40 text-sm">Nenhum serviço cadastrado.</p>';
 }
 
@@ -706,9 +694,11 @@ async function cadastrarServico(){
   const valor = document.getElementById('novoServicoValor').value;
   const duracaoMin = document.getElementById('novoServicoDuracao').value;
   if (!nome || !valor) { alert('Preencha ao menos nome e valor.'); return; }
-  const r = await apiPost('cadastrarServico', { nome, categoria, valor, duracaoMin });
+  const r = servicoEditando
+    ? await apiPost('editarServico', { nomeOriginal: servicoEditando, nome, categoria, valor, duracaoMin })
+    : await apiPost('cadastrarServico', { nome, categoria, valor, duracaoMin });
   alert(r.ok ? r.mensagem : ('Erro: ' + r.erro));
-  if (r.ok) { document.getElementById('novoServicoNome').value=''; document.getElementById('novoServicoValor').value=''; carregarServicos(); }
+  if (r.ok) { servicoEditando = null; document.querySelector('#tab-servicos button[onclick="cadastrarServico()"]').textContent = 'Cadastrar Serviço'; document.getElementById('novoServicoNome').value=''; document.getElementById('novoServicoValor').value=''; carregarServicos(); }
 }
 
 // ============================================================
@@ -718,10 +708,12 @@ async function carregarProfissionais(){
   const r = await apiGet('listarProfissionais');
   const el = document.getElementById('listaProfissionais');
   if (!r.ok) { el.innerHTML = `<p class="p-3 text-warn text-sm">${r.erro}</p>`; return; }
-  el.innerHTML = r.profissionais.map(p => `
-    <div class="p-3 text-sm flex items-center justify-between">
-      <div><strong>${p.nome}</strong> <span class="text-charcoal/40">(${p.especialidades || 'sem especialidade definida'})</span></div>
-      <div class="ledger-num">Comissão: ${p.comissaoPercent}%</div>
+  PROFS_CACHE = r.profissionais;
+  el.innerHTML = r.profissionais.map((p, i) => `
+    <div class="p-3 text-sm flex items-center justify-between gap-2 flex-wrap">
+      <div><strong>${esc(p.nome)}</strong> <span class="text-charcoal/40">(${esc(p.especialidades) || 'sem especialidade definida'})</span></div>
+      <div class="flex items-center gap-2"><span class="ledger-num">Comissão: ${p.comissaoPercent}%</span>
+        ${SESSAO.papel === 'Admin' ? `<button onclick="editarProfForm(${i})" class="text-xs font-bold border border-nude-300 px-2 py-1 rounded">Editar</button><button onclick="desativarProf(${i})" class="text-xs font-bold bg-warn text-white px-2 py-1 rounded">Desativar</button>` : ''}</div>
     </div>`).join('') || '<p class="p-3 text-charcoal/40 text-sm">Nenhum profissional cadastrado.</p>';
   popularSelectProfissionais(r.profissionais);
 }
@@ -736,9 +728,11 @@ async function cadastrarProfissional(){
   const especialidades = document.getElementById('novoProfEspecialidades').value;
   const comissaoPercent = document.getElementById('novoProfComissao').value;
   if (!nome) { alert('Preencha o nome.'); return; }
-  const r = await apiPost('cadastrarProfissional', { nome, especialidades, comissaoPercent });
+  const r = profEditando
+    ? await apiPost('editarProfissional', { id: profEditando, nome, especialidades, comissaoPercent })
+    : await apiPost('cadastrarProfissional', { nome, especialidades, comissaoPercent });
   alert(r.ok ? r.mensagem : ('Erro: ' + r.erro));
-  if (r.ok) { document.getElementById('novoProfNome').value=''; carregarProfissionais(); }
+  if (r.ok) { profEditando = null; document.querySelector('#tab-profissionais button[onclick="cadastrarProfissional()"]').textContent = 'Cadastrar Profissional'; document.getElementById('novoProfNome').value=''; carregarProfissionais(); }
 }
 
 // ============================================================
@@ -748,10 +742,13 @@ async function carregarMesas(){
   const r = await apiGet('listarMesas');
   const el = document.getElementById('listaMesas');
   if (!r.ok) { el.innerHTML = `<p class="p-3 text-warn text-sm">${r.erro}</p>`; return; }
-  el.innerHTML = r.mesas.map(m => `
-    <div class="p-3 text-sm flex items-center justify-between">
-      <div><strong>${m.nome}</strong></div>
-      <div class="text-charcoal/50 text-right">${m.servicos}</div>
+  MESAS_CACHE = r.mesas;
+  el.innerHTML = r.mesas.map((m, i) => `
+    <div class="p-3 text-sm flex items-center justify-between gap-2 flex-wrap">
+      <div><strong>${esc(m.nome)}</strong></div>
+      <div class="flex items-center gap-2"><span class="text-charcoal/50 text-right">${esc(m.servicos)}</span>
+        <button onclick="editarMesaForm(${i})" class="text-xs font-bold border border-nude-300 px-2 py-1 rounded">Editar</button>
+        <button onclick="excluirMesaAdmin(${i})" class="text-xs font-bold bg-warn text-white px-2 py-1 rounded">Excluir</button></div>
     </div>`).join('') || '<p class="p-3 text-charcoal/40 text-sm">Nenhuma mesa cadastrada.</p>';
 }
 
@@ -759,9 +756,11 @@ async function cadastrarMesa(){
   const nome = document.getElementById('novaMesaNome').value;
   const servicos = document.getElementById('novaMesaServicos').value;
   if (!nome || !servicos) { alert('Preencha nome da mesa e ao menos um serviço.'); return; }
-  const r = await apiPost('cadastrarMesa', { nome, servicos });
+  const r = mesaEditando
+    ? await apiPost('editarMesa', { id: mesaEditando, nome, servicos })
+    : await apiPost('cadastrarMesa', { nome, servicos });
   alert(r.ok ? r.mensagem : ('Erro: ' + r.erro));
-  if (r.ok) { document.getElementById('novaMesaNome').value=''; document.getElementById('novaMesaServicos').value=''; carregarMesas(); }
+  if (r.ok) { mesaEditando = null; document.querySelector('#tab-mesas button[onclick="cadastrarMesa()"]').textContent = 'Cadastrar Mesa'; document.getElementById('novaMesaNome').value=''; document.getElementById('novaMesaServicos').value=''; carregarMesas(); }
 }
 
 // ============================================================
@@ -803,7 +802,7 @@ async function cadastrarUsuario(){
   const nome = document.getElementById('novoUsuNome').value;
   const papel = document.getElementById('novoUsuPapel').value;
   const profissionalId = papel === 'NailDesigner' ? document.getElementById('novoUsuProfissional').value : '';
-  const permissoes = document.getElementById('novoUsuPermissoes').value;
+  const permissoes = permissoesMarcadas();
   const cpf = document.getElementById('novoUsuCpf').value;
   const email = document.getElementById('novoUsuEmail').value;
   const arquivoFoto = document.getElementById('novoUsuFoto').files[0];
@@ -826,6 +825,294 @@ async function cadastrarUsuario(){
   document.getElementById('novoUsuFoto').value='';
   carregarUsuarios();
 }
+
+// ============================================================
+// v1.4 — helpers
+// ============================================================
+function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function msg(r){ alert(r.ok ? r.mensagem : ('Erro: ' + r.erro)); return r.ok; }
+function hojeYmd(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+
+function kpi(titulo, valor, sub, cor){
+  return `<div class="bg-white rounded-2xl border border-nude-200 p-4">
+    <div class="text-xs uppercase tracking-wider text-charcoal/50 font-bold">${titulo}</div>
+    <div class="ledger-num text-2xl font-bold mt-1 ${cor||''}">${valor}</div>
+    ${sub ? `<div class="text-xs text-charcoal/50 mt-1">${sub}</div>` : ''}</div>`;
+}
+
+// barras verticais (série) e horizontais (ranking), sem biblioteca externa
+function barrasV(itens){
+  const max = Math.max(1, ...itens.map(i => i.valor));
+  return `<div class="flex items-end gap-1 h-44">${itens.map(i => `
+    <div class="flex-1 flex flex-col items-center justify-end h-full" title="${esc(i.titulo)}">
+      <div class="text-[10px] ledger-num text-charcoal/50">${i.valor ? Math.round(i.valor) : ''}</div>
+      <div class="w-full rounded-t bg-gold-500" style="height:${Math.max(2, i.valor / max * 100)}%"></div>
+      <div class="text-[10px] text-charcoal/50 mt-1">${esc(i.rotulo)}</div>
+    </div>`).join('')}</div>`;
+}
+function barrasH(itens, formatar){
+  if (!itens.length) return '<p class="text-sm text-charcoal/40">Sem dados no período.</p>';
+  const max = Math.max(1, ...itens.map(i => i.valor));
+  return itens.map(i => `
+    <div class="mb-2">
+      <div class="flex justify-between text-sm"><span class="font-semibold">${esc(i.rotulo)}</span><span class="ledger-num">${formatar ? formatar(i) : i.valor}</span></div>
+      <div class="h-3 bg-nude-100 rounded-full overflow-hidden"><div class="h-3 rounded-full bg-charcoal" style="width:${i.valor / max * 100}%"></div></div>
+      ${i.sub ? `<div class="text-xs text-charcoal/50">${i.sub}</div>` : ''}
+    </div>`).join('');
+}
+
+// ============================================================
+// Dashboard
+// ============================================================
+async function carregarDashboard(){
+  const r = await apiGet('dashboard', { dias: document.getElementById('dashDias').value });
+  if (!r.ok) { document.getElementById('dashKpis').innerHTML = `<p class="text-warn text-sm col-span-4">${esc(r.erro)}</p>`; return; }
+  document.getElementById('dashKpis').innerHTML =
+    kpi('Faturamento de hoje', fmt(r.faturamentoDia), `${r.atendimentosDia} atendimento(s) · ${r.clientesDia} cliente(s)`) +
+    kpi('Faturamento do mês', fmt(r.faturamentoMes), `${r.atendimentosMes} atendimentos · ${r.clientesMes} clientes atendidos`) +
+    kpi('Previsão 4 semanas', fmt(r.previsaoTotal), 'agendamentos em aberto') +
+    kpi('Caixa do mês', fmt(r.caixaMes.caixa), `Recebido ${fmt(r.caixaMes.recebido)} − Pago ${fmt(r.caixaMes.pago)}`, r.caixaMes.caixa < 0 ? 'text-warn' : 'text-ok');
+
+  const a = r.alertas;
+  const caixaAlerta = (ok, texto, tab) => `<button onclick="irParaAba('${tab}')" class="text-left rounded-2xl border p-3 text-sm ${ok ? 'bg-white border-nude-200 text-charcoal/60' : 'bg-red-50 border-red-200 text-warn font-bold'}">${ok ? '<i class="fa-solid fa-circle-check text-ok mr-1"></i>' : '<i class="fa-solid fa-triangle-exclamation mr-1"></i>'}${texto}</button>`;
+  document.getElementById('dashAlertas').innerHTML =
+    caixaAlerta(a.estoqueBaixo === 0, a.estoqueBaixo ? `${a.estoqueBaixo} item(ns) de material em falta/baixo` : 'Estoque de material OK', 'estoque') +
+    caixaAlerta(a.produtosBaixo === 0, a.produtosBaixo ? `${a.produtosBaixo} produto(s) à venda com estoque baixo` : 'Estoque de produtos OK', 'produtos') +
+    caixaAlerta(a.contasVencidas === 0, a.contasVencidas ? `${a.contasVencidas} conta(s) vencida(s) — ${fmt(a.valorVencido)}` : 'Nenhuma conta vencida', 'financeiro') +
+    caixaAlerta(a.retornoPendente === 0, a.retornoPendente ? `${a.retornoPendente} cliente(s) para contatar (retorno)` : 'Ninguém aguardando retorno', 'retorno');
+
+  document.getElementById('dashSerie').innerHTML = barrasV(r.serieDiaria.map(d => ({ valor: d.valor, rotulo: d.data.substring(8), titulo: `${d.data}: ${fmt(d.valor)} (${d.qtd} atend.)` })));
+  document.getElementById('dashPrevisao').innerHTML = barrasH(r.previsao.map(w => ({ valor: w.valor, rotulo: `Semana ${w.semana} (a partir de ${w.inicio.substring(8)}/${w.inicio.substring(5,7)})`, sub: `${w.qtd} agendamento(s)` })), i => fmt(i.valor));
+  document.getElementById('dashServicos').innerHTML = barrasH(r.topServicos.map(s => ({ valor: s.qtd, rotulo: s.servico, sub: fmt(s.valor) + ' faturados' })), i => i.valor + ' atend.');
+  document.getElementById('dashProfs').innerHTML = barrasH(r.rankingProfissionais.map(p => ({ valor: p.qtd, rotulo: p.profissional, sub: `${fmt(p.valor)} faturados · comissão estimada ${fmt(p.comissao)}` })), i => i.valor + ' atend.');
+}
+
+function irParaAba(tab){
+  const b = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
+  if (b) b.click();
+}
+
+// ============================================================
+// Cliente: cadastro pelo admin
+// ============================================================
+async function cadastrarClienteAdmin(){
+  const dados = { cpf: ncCpf.value, nome: ncNome.value, telefone: ncTel.value, email: ncEmail.value, vip: ncVip.checked };
+  if (!dados.cpf || !dados.nome || !dados.telefone) { alert('Preencha CPF, nome e telefone.'); return; }
+  const r = await apiPost('cadastrarCliente', dados);
+  if (msg(r)) { ncCpf.value = ncNome.value = ncTel.value = ncEmail.value = ''; ncVip.checked = false; carregarClientes(); }
+}
+
+// ============================================================
+// Financeiro
+// ============================================================
+function intervaloPeriodo(periodo, ref){
+  const [y, m] = ref.split('-').map(Number);
+  if (periodo === 'dia') return [ref, ref];
+  if (periodo === 'ano') return [`${y}-01-01`, `${y}-12-31`];
+  const ultimo = new Date(y, m, 0).getDate();
+  return [`${y}-${String(m).padStart(2,'0')}-01`, `${y}-${String(m).padStart(2,'0')}-${ultimo}`];
+}
+
+async function carregarFinanceiro(){
+  const ref = finRef.value || (finRef.value = hojeYmd());
+  const periodo = finPeriodo.value;
+  if (!finVenc.value) finVenc.value = ref;
+  const [ini, fim] = intervaloPeriodo(periodo, ref);
+  const [rel, lista] = await Promise.all([apiGet('relatorioFinanceiro', { periodo, ref }), apiGet('listarFinanceiro', { inicio: ini, fim: fim })]);
+  if (!rel.ok) { finResumo.innerHTML = `<p class="text-warn text-sm col-span-6">${esc(rel.erro)}</p>`; return; }
+  const x = rel.relatorio;
+  finResumo.innerHTML =
+    kpi('Recebido', fmt(x.recebido), '', 'text-ok') + kpi('Pago', fmt(x.pago), '', 'text-warn') +
+    kpi('Caixa', fmt(x.caixa), 'recebido − pago', x.caixa < 0 ? 'text-warn' : '') +
+    kpi('A receber', fmt(x.aReceber), 'pendente no período') + kpi('A pagar', fmt(x.aPagar), 'pendente no período') +
+    kpi('Resultado previsto', fmt(x.resultadoPrevisto), 'caixa + a receber − a pagar', x.resultadoPrevisto < 0 ? 'text-warn' : '');
+  const nomes = { Servico:'Serviços', Curso:'Cursos', Produto:'Produtos', Clube:'Clube', Fixa:'Despesas fixas', Variavel:'Despesas variáveis', Outro:'Outros' };
+  const cats = Object.keys(x.porCategoria);
+  finCategorias.innerHTML = cats.map(c => `<div class="flex justify-between py-1 border-b border-nude-100"><span>${nomes[c]||c}</span><span class="ledger-num">${x.porCategoria[c].receber ? '<span class="text-ok">+'+fmt(x.porCategoria[c].receber)+'</span> ' : ''}${x.porCategoria[c].pagar ? '<span class="text-warn">−'+fmt(x.porCategoria[c].pagar)+'</span>' : ''}</span></div>`).join('') || '<span class="text-charcoal/40">Sem movimentos pagos no período.</span>';
+  if (!lista.ok) { finLista.innerHTML = `<p class="p-3 text-warn text-sm">${esc(lista.erro)}</p>`; return; }
+  finLista.innerHTML = lista.lancamentos.map(l => `
+    <div class="p-3 text-sm flex items-center justify-between gap-2 flex-wrap">
+      <div><strong>${esc(l.Descricao)}</strong> <span class="badge ${l.Tipo==='Receber'?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}">${l.Tipo==='Receber'?'Receber':'Pagar'}</span>
+        <span class="badge bg-nude-100 text-charcoal/60">${nomes[l.Categoria]||l.Categoria}</span>
+        ${l.vencido ? '<span class="badge bg-red-600 text-white">Vencido</span>' : ''}<br>
+        <span class="text-charcoal/50">Vence ${esc(String(l.Vencimento).substring(0,10))} · ${l.Status}${l.DataPagamento ? ' em ' + esc(String(l.DataPagamento).substring(0,10)) : ''}</span></div>
+      <div class="flex items-center gap-2"><span class="ledger-num font-bold">${fmt(l.Valor)}</span>
+        <button onclick="alternarPago('${l.ID}', ${l.Status !== 'Pago'})" class="text-xs font-bold border border-nude-300 px-2 py-1 rounded">${l.Status === 'Pago' ? 'Desfazer' : 'Marcar pago'}</button>
+        <button onclick="excluirLancamento('${l.ID}')" class="text-xs font-bold bg-warn text-white px-2 py-1 rounded">Excluir</button></div>
+    </div>`).join('') || '<p class="p-3 text-charcoal/40 text-sm">Nenhum lançamento no período.</p>';
+}
+async function salvarLancamento(){
+  const dados = { tipo: finTipo.value, categoria: finCategoria.value, descricao: finDescricao.value, valor: finValor.value, vencimento: finVenc.value, repetirMeses: finRepetir.value, status: finPago.checked ? 'Pago' : 'Pendente' };
+  if (!dados.descricao || !dados.valor) { alert('Preencha descrição e valor.'); return; }
+  const r = await apiPost('salvarLancamento', dados);
+  if (msg(r)) { finDescricao.value = ''; finValor.value = ''; finRepetir.value = 1; finPago.checked = false; carregarFinanceiro(); }
+}
+async function alternarPago(id, pago){ msg(await apiPost('marcarLancamentoPago', { id, pago })); carregarFinanceiro(); }
+async function excluirLancamento(id){ if (!confirm('Excluir este lançamento?')) return; msg(await apiPost('excluirLancamento', { id })); carregarFinanceiro(); }
+
+// ============================================================
+// Estoque de material
+// ============================================================
+let ESTOQUE_CACHE = [], estEditandoId = null;
+async function carregarEstoque(){
+  const r = await apiGet('listarEstoque');
+  if (!r.ok) { estLista.innerHTML = `<p class="p-3 text-warn text-sm">${esc(r.erro)}</p>`; return; }
+  ESTOQUE_CACHE = r.itens;
+  estAlerta.innerHTML = r.emAlerta ? `<div class="rounded-2xl bg-red-50 border border-red-200 text-warn font-bold p-3 text-sm"><i class="fa-solid fa-triangle-exclamation mr-1"></i>${r.emAlerta} item(ns) no mínimo ou em falta — hora de comprar!</div>` : '';
+  estLista.innerHTML = r.itens.map(i => `
+    <div class="p-3 text-sm flex items-center justify-between gap-2 flex-wrap ${i.alerta ? 'bg-red-50' : ''}">
+      <div><strong>${esc(i.Item)}</strong> ${i.alerta ? '<span class="badge bg-red-600 text-white">Repor</span>' : ''}<br>
+        <span class="text-charcoal/50">${esc(i.Categoria)} · mínimo ${i.Minimo} ${esc(i.Unidade)} · custo ${fmt(i.CustoUnitario)}</span></div>
+      <div class="flex items-center gap-2"><span class="ledger-num text-lg font-bold">${i.Quantidade} ${esc(i.Unidade)}</span>
+        <button onclick="movEstoque('${i.ID}', 1)" class="text-xs font-bold bg-ok text-white px-2 py-1 rounded">+ Entrada</button>
+        <button onclick="movEstoque('${i.ID}', -1)" class="text-xs font-bold bg-charcoal text-white px-2 py-1 rounded">− Uso</button>
+        <button onclick="editarEstoque('${i.ID}')" class="text-xs font-bold border border-nude-300 px-2 py-1 rounded">Editar</button>
+        <button onclick="excluirEstoque('${i.ID}')" class="text-xs font-bold bg-warn text-white px-2 py-1 rounded">Excluir</button></div>
+    </div>`).join('') || '<p class="p-3 text-charcoal/40 text-sm">Nenhum item cadastrado.</p>';
+}
+async function salvarItemEstoque(){
+  const dados = { id: estEditandoId, item: estItem.value, categoria: estCategoria.value, unidade: estUnidade.value, quantidade: estQtd.value, minimo: estMin.value, custoUnitario: estCusto.value };
+  if (!dados.item) { alert('Informe o nome do item.'); return; }
+  if (msg(await apiPost('salvarItemEstoque', dados))) { estEditandoId = null; estBtn.textContent = 'Cadastrar item'; [estItem, estCategoria, estQtd, estMin, estCusto].forEach(e => e.value = ''); carregarEstoque(); }
+}
+function editarEstoque(id){
+  const i = ESTOQUE_CACHE.find(x => x.ID === id); if (!i) return;
+  estEditandoId = id; estItem.value = i.Item; estCategoria.value = i.Categoria; estUnidade.value = i.Unidade; estQtd.value = i.Quantidade; estMin.value = i.Minimo; estCusto.value = i.CustoUnitario;
+  estBtn.textContent = 'Salvar alterações'; window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+async function movEstoque(id, sinal){
+  const n = Number(prompt(sinal > 0 ? 'Quantas unidades ENTRARAM?' : 'Quantas unidades foram USADAS?'));
+  if (!n || n < 0) return;
+  const r = await apiPost('movimentarEstoque', { id, delta: sinal * n });
+  if (msg(r)) carregarEstoque();
+}
+async function excluirEstoque(id){ if (!confirm('Excluir este item do estoque?')) return; msg(await apiPost('excluirItemEstoque', { id })); carregarEstoque(); }
+
+// ============================================================
+// Produtos (loja do site)
+// ============================================================
+let PRODUTOS_CACHE = [], prEditandoId = null;
+async function carregarProdutos(){
+  const r = await apiGet('listarProdutos');
+  if (!r.ok) { prLista.innerHTML = `<p class="p-3 text-warn text-sm">${esc(r.erro)}</p>`; return; }
+  PRODUTOS_CACHE = r.produtos;
+  prLista.innerHTML = r.produtos.map(p => `
+    <div class="p-3 text-sm flex items-center justify-between gap-2 flex-wrap ${p.alerta && p.Ativo==='Sim' ? 'bg-red-50' : ''}">
+      <div class="flex items-center gap-3">
+        ${p.FotoURL ? `<img src="${esc(p.FotoURL)}" class="w-12 h-12 rounded-lg object-cover border border-nude-200">` : '<div class="w-12 h-12 rounded-lg bg-nude-100"></div>'}
+        <div><strong>${esc(p.Nome)}</strong> ${p.Ativo!=='Sim' ? '<span class="badge bg-nude-200 text-charcoal/50">Oculto</span>' : ''} ${p.alerta ? '<span class="badge bg-red-600 text-white">Estoque baixo</span>' : ''}<br>
+        <span class="text-charcoal/50">${esc(p.Descricao)}</span></div></div>
+      <div class="flex items-center gap-2"><span class="ledger-num font-bold">${fmt(p.Preco)}</span><span class="ledger-num text-charcoal/60">${p.Estoque} em estoque</span>
+        <button onclick="venderProduto('${p.ID}')" class="text-xs font-bold bg-ok text-white px-2 py-1 rounded">Vender</button>
+        <button onclick="editarProduto('${p.ID}')" class="text-xs font-bold border border-nude-300 px-2 py-1 rounded">Editar</button>
+        <button onclick="excluirProduto('${p.ID}')" class="text-xs font-bold bg-warn text-white px-2 py-1 rounded">Excluir</button></div>
+    </div>`).join('') || '<p class="p-3 text-charcoal/40 text-sm">Nenhum produto cadastrado.</p>';
+}
+async function salvarProduto(){
+  const dados = { id: prEditandoId, nome: prNome.value, preco: prPreco.value, estoque: prEstoque.value, estoqueMinimo: prMin.value, descricao: prDescricao.value, fotoUrl: prFoto.value, ativo: prAtivo.checked };
+  if (!dados.nome || dados.preco === '') { alert('Informe nome e preço.'); return; }
+  if (msg(await apiPost('salvarProduto', dados))) { prEditandoId = null; prBtn.textContent = 'Cadastrar produto'; [prNome, prPreco, prEstoque, prMin, prDescricao, prFoto].forEach(e => e.value = ''); prAtivo.checked = true; carregarProdutos(); }
+}
+function editarProduto(id){
+  const p = PRODUTOS_CACHE.find(x => x.ID === id); if (!p) return;
+  prEditandoId = id; prNome.value = p.Nome; prPreco.value = p.Preco; prEstoque.value = p.Estoque; prMin.value = p.EstoqueMinimo; prDescricao.value = p.Descricao; prFoto.value = p.FotoURL; prAtivo.checked = p.Ativo === 'Sim';
+  prBtn.textContent = 'Salvar alterações'; window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+async function venderProduto(id){
+  const q = Number(prompt('Quantas unidades foram vendidas?', '1')); if (!q || q < 1) return;
+  if (msg(await apiPost('venderProduto', { id, quantidade: q }))) carregarProdutos();
+}
+async function excluirProduto(id){ if (!confirm('Excluir este produto?')) return; msg(await apiPost('excluirProduto', { id })); carregarProdutos(); }
+
+// ============================================================
+// Clube (pacotes)
+// ============================================================
+let CLUBE_REGRAS = { desconto: 0.30, atendPorMes: 2, meses: [6, 12] };
+function previewPacote(){
+  const v = Number(ckValor.value), m = Number(ckMeses.value), a = Number(ckAtend.value) || CLUBE_REGRAS.atendPorMes;
+  if (!v) { ckPreview.textContent = ''; return; }
+  const bruto = v * a * m, total = bruto * (1 - CLUBE_REGRAS.desconto);
+  ckPreview.innerHTML = `Total ${fmt(total)} <span class="text-charcoal/50 font-normal">(avulso ${fmt(bruto)} · economia ${fmt(bruto - total)})</span>`;
+}
+async function carregarClube(){
+  const r = await apiGet('listarPacotes');
+  if (!r.ok) { ckLista.innerHTML = `<p class="p-3 text-warn text-sm">${esc(r.erro)}</p>`; return; }
+  CLUBE_REGRAS = r.regras;
+  clubeRegras.textContent = `Regra atual: ${Math.round(r.regras.desconto*100)}% de desconto, pagamento adiantado, pacotes de ${r.regras.meses.join(' ou ')} meses, ${r.regras.atendPorMes} atendimento(s) por mês (padrão — pode ajustar por pacote).`;
+  if (!ckAtend.value) ckAtend.value = r.regras.atendPorMes;
+  previewPacote();
+  const cor = { Ativo:'bg-green-100 text-green-700', Vencido:'bg-red-100 text-red-700', Concluido:'bg-blue-100 text-blue-700', Cancelado:'bg-nude-200 text-charcoal/50' };
+  ckLista.innerHTML = r.pacotes.map(p => `
+    <div class="p-3 text-sm flex items-center justify-between gap-2 flex-wrap">
+      <div><strong>${esc(p.Nome)}</strong> <span class="badge ${cor[p.status]||''}">${p.status}</span><br>
+        <span class="text-charcoal/50">${p.Meses} meses (${esc(String(p.Inicio).substring(0,10))} → ${esc(String(p.Fim).substring(0,10))}) · ${fmt(p.ValorTotal)} · ${p.AtendPorMes}/mês</span></div>
+      <div class="flex items-center gap-2"><span class="ledger-num">Mês: ${p.usosMesAtual}/${p.AtendPorMes} · Total: ${p.usosTotal}/${p.totalPrevisto}</span>
+        ${p.status === 'Ativo' ? `<button onclick="usarPacote('${p.ID}')" class="text-xs font-bold bg-charcoal text-white px-2 py-1 rounded">Registrar atendimento</button>
+        <button onclick="cancelarPacote('${p.ID}')" class="text-xs font-bold bg-warn text-white px-2 py-1 rounded">Cancelar</button>` : ''}</div>
+    </div>`).join('') || '<p class="p-3 text-charcoal/40 text-sm">Nenhum pacote criado.</p>';
+}
+async function criarPacote(){
+  const dados = { cpf: ckCpf.value, meses: ckMeses.value, valorAvulso: ckValor.value, atendPorMes: ckAtend.value, pago: ckPago.checked };
+  if (!dados.cpf || !dados.valorAvulso) { alert('Informe CPF e valor avulso.'); return; }
+  const r = await apiPost('criarPacote', dados);
+  if (msg(r)) { ckCpf.value = ''; ckValor.value = ''; ckPago.checked = false; carregarClube(); }
+}
+async function usarPacote(id){ msg(await apiPost('usarPacote', { id })); carregarClube(); }
+async function cancelarPacote(id){ if (!confirm('Cancelar este pacote?')) return; msg(await apiPost('cancelarPacote', { id })); carregarClube(); }
+
+// ============================================================
+// Auditoria
+// ============================================================
+async function carregarAuditoria(){
+  const r = await apiGet('listarAuditoria', { limite: 300 });
+  if (!r.ok) { tbodyAuditoria.innerHTML = `<tr><td colspan="4" class="p-3 text-warn">${esc(r.erro)}</td></tr>`; return; }
+  tbodyAuditoria.innerHTML = r.registros.map(a => `<tr class="border-t border-nude-100"><td class="p-3 ledger-num whitespace-nowrap">${esc(a.dataHora)}</td><td class="p-3 font-semibold">${esc(a.login)}</td><td class="p-3">${esc(a.acao)}</td><td class="p-3 text-charcoal/50 break-all">${esc(a.detalhe)}</td></tr>`).join('');
+}
+
+// ============================================================
+// Editar Serviços / Profissionais / Mesas (reaproveita o formulário de cadastro)
+// ============================================================
+let servicoEditando = null, profEditando = null, mesaEditando = null, SERVICOS_CACHE = [], PROFS_CACHE = [], MESAS_CACHE = [];
+function editarServicoForm(i){
+  const s = SERVICOS_CACHE[i]; servicoEditando = s.nome;
+  novoServicoNome.value = s.nome; novoServicoCategoria.value = s.categoria; novoServicoValor.value = s.valor; novoServicoDuracao.value = s.duracaoMin;
+  document.querySelector('#tab-servicos button[onclick="cadastrarServico()"]').textContent = 'Salvar alterações'; window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+async function desativarServico(i){
+  const s = SERVICOS_CACHE[i]; if (!confirm(`Desativar "${s.nome}"? Ele deixa de aparecer no site.`)) return;
+  if (msg(await apiPost('editarServico', { nomeOriginal: s.nome, nome: s.nome, categoria: s.categoria, valor: s.valor, duracaoMin: s.duracaoMin, ativo: false }))) carregarServicos();
+}
+function editarProfForm(i){
+  const p = PROFS_CACHE[i]; profEditando = p.id;
+  novoProfNome.value = p.nome; novoProfEspecialidades.value = p.especialidades; novoProfComissao.value = p.comissaoPercent;
+  document.querySelector('#tab-profissionais button[onclick="cadastrarProfissional()"]').textContent = 'Salvar alterações'; window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+async function desativarProf(i){
+  const p = PROFS_CACHE[i]; if (!confirm(`Desativar ${p.nome}?`)) return;
+  if (msg(await apiPost('editarProfissional', { id: p.id, nome: p.nome, especialidades: p.especialidades, comissaoPercent: p.comissaoPercent, ativo: false }))) carregarProfissionais();
+}
+function editarMesaForm(i){
+  const m = MESAS_CACHE[i]; mesaEditando = m.id;
+  novaMesaNome.value = m.nome; novaMesaServicos.value = m.servicos;
+  document.querySelector('#tab-mesas button[onclick="cadastrarMesa()"]').textContent = 'Salvar alterações'; window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+async function excluirMesaAdmin(i){
+  const m = MESAS_CACHE[i]; if (!confirm(`Excluir a ${m.nome}? Agendamentos futuros nessa mesa podem ficar sem mesa válida.`)) return;
+  if (msg(await apiPost('excluirMesa', { id: m.id }))) carregarMesas();
+}
+
+// ============================================================
+// Permissões: caixas de seleção
+// ============================================================
+const PERMISSOES_DISPONIVEIS = [
+  ['dashboard','Dashboard'], ['agendamentos','Agendamentos'], ['atendimentos','Atendimentos'], ['clientes','Clientes'], ['retorno','Retorno'],
+  ['servicos','Serviços'], ['profissionais','Profissionais'], ['financeiro','Financeiro'], ['estoque','Estoque'], ['produtos','Produtos'], ['clube','Clube']
+];
+document.addEventListener('DOMContentLoaded', () => {
+  novoUsuPermissoes.innerHTML = PERMISSOES_DISPONIVEIS.map(([k, n]) => `<label class="flex items-center gap-1"><input type="checkbox" class="perm-chk" value="${k}" ${['agendamentos','atendimentos','clientes'].includes(k) ? 'checked' : ''}> ${n}</label>`).join('');
+  finRef.value = hojeYmd();
+});
+function permissoesMarcadas(){ return [...document.querySelectorAll('.perm-chk:checked')].map(c => c.value).join(','); }
 </script>
 </body>
 </html>
