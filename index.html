@@ -131,6 +131,7 @@
                     <span>Aulas Práticas</span>
                 </a>
                 <a href="#servicos" class="hover:text-nude-600 transition-colors">Atendimentos</a>
+                <a href="#loja" id="navLoja" class="hidden hover:text-nude-600 transition-colors">Loja</a>
                 <a href="#sobre" class="hover:text-nude-600 transition-colors">Elieti Coutinho</a>
                 <a href="#cursos" class="hover:text-nude-600 transition-colors">Cursos & Apostilas</a>
                 <a href="#presencial" class="hover:text-nude-600 transition-colors flex items-center gap-1.5 font-semibold">
@@ -160,6 +161,7 @@
         <div id="mobileMenu" class="hidden md:hidden bg-nude-100 border-b border-nude-300 px-6 py-6 space-y-4 shadow-xl">
             <a href="#videos" class="block text-base font-bold text-gold-600 mobile-link">Aulas Práticas em Vídeo</a>
             <a href="#servicos" class="block text-base font-medium text-charcoal hover:text-nude-600 mobile-link">Atendimentos no Studio</a>
+            <a href="#loja" id="navLojaMobile" class="hidden block text-base font-medium text-charcoal hover:text-nude-600 mobile-link">Loja do Studio</a>
             <a href="#sobre" class="block text-base font-medium text-charcoal hover:text-nude-600 mobile-link">Sobre Elieti Coutinho</a>
             <a href="#cursos" class="block text-base font-medium text-charcoal hover:text-nude-600 mobile-link">Cursos Online & Apostilas</a>
             <a href="#presencial" class="block text-base font-bold text-gold-600 mobile-link">Imersão Presencial VIP (2 Vagas)</a>
@@ -558,6 +560,18 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <!-- Loja: produtos cadastrados no painel (só aparece se houver produto ativo com estoque) -->
+    <section id="loja" class="hidden py-20 bg-nude-100/70 border-b border-nude-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-12">
+                <span class="text-gold-600 text-xs font-bold uppercase tracking-widest">Loja do Studio</span>
+                <h2 class="font-serif text-4xl font-bold text-charcoal mt-2">Produtos selecionados por Elieti</h2>
+                <p class="text-charcoal/70 mt-3">Os mesmos produtos que usamos e recomendamos. Peça pelo WhatsApp e combine a retirada ou entrega.</p>
+            </div>
+            <div id="lojaGrade" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
         </div>
     </section>
 
@@ -1512,7 +1526,7 @@
         // CONTROLE DE VERSÃO deste arquivo (index.html)
         // Atualize esse valor manualmente sempre que subir uma nova versão.
         // ============================================================
-        const VERSAO_INDEX = '1.2.0 · 22/09/2026';
+        const VERSAO_INDEX = '1.4.0 · 05/11/2026';
         document.addEventListener('DOMContentLoaded', () => {
             const el = document.getElementById('siteVersion');
             if (el) el.textContent = `Studio 14 · v${VERSAO_INDEX}`;
@@ -1521,6 +1535,35 @@
         const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbztKAG3uE_fi9CKjsJMJnYoAJqPHDF3uXl4AyDDip_vm_GMOG7Z7L-7Xzxa1OjgmNDJ/exec';
         // Mesma chave configurada em "Propriedades do script" (propriedade API_KEY) no Apps Script.
         const APP_API_KEY = 'hypEPwreT82uIYb0HQg716ItJx9D60tt';
+
+        // ============================================================
+        // LOJA — lê os produtos cadastrados no painel (Apps Script)
+        // ============================================================
+        function escLoja(t){ return String(t == null ? '' : t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+        async function carregarLoja() {
+            try {
+                const r = await (await fetch(`${WEBAPP_URL}?action=produtosPublico`)).json();
+                if (!r.ok || !r.produtos.length) return; // sem produtos: a seção continua oculta
+                document.getElementById('lojaGrade').innerHTML = r.produtos.map(p => {
+                    const msg = encodeURIComponent(`Olá! Vim pelo site do Studio 14 e quero comprar: ${p.nome} (R$ ${p.preco.toFixed(2).replace('.', ',')}).`);
+                    const foto = p.fotoUrl ? `<img src="${escLoja(p.fotoUrl)}" alt="${escLoja(p.nome)}" loading="lazy" class="w-full h-52 object-cover">` : '<div class="w-full h-52 bg-nude-200 flex items-center justify-center text-nude-600"><i class="fa-solid fa-gem text-3xl"></i></div>';
+                    return `<div class="bg-white rounded-2xl overflow-hidden border border-nude-200 shadow-sm flex flex-col">
+                        ${foto}
+                        <div class="p-5 flex flex-col flex-1">
+                            <h3 class="font-serif text-xl font-bold text-charcoal">${escLoja(p.nome)}</h3>
+                            <p class="text-sm text-charcoal/60 mt-1 flex-1">${escLoja(p.descricao)}</p>
+                            <div class="mt-4 flex items-center justify-between gap-2">
+                                <span class="font-bold text-lg text-charcoal">R$ ${p.preco.toFixed(2).replace('.', ',')}</span>
+                                ${p.estoque <= 3 ? `<span class="text-[11px] font-bold uppercase text-red-600">Últimas ${p.estoque}</span>` : ''}
+                            </div>
+                            <a href="https://wa.me/5565981090775?text=${msg}" target="_blank" rel="noopener" class="mt-3 block text-center py-2.5 rounded-full gold-gradient-bg text-charcoal text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-all"><i class="fa-brands fa-whatsapp mr-1"></i>Pedir pelo WhatsApp</a>
+                        </div></div>`;
+                }).join('');
+                ['loja'].forEach(id => document.getElementById(id).classList.remove('hidden'));
+                ['navLoja', 'navLojaMobile'].forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('hidden'); });
+            } catch (e) { /* loja é opcional: se falhar, o site segue normal */ }
+        }
+        document.addEventListener('DOMContentLoaded', carregarLoja);
         let servicoAtual = '';
         let valorAtual = 0;
         let dataAtual = '';
