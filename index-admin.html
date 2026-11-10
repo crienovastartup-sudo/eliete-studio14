@@ -37,8 +37,8 @@ tailwind.config = { theme: { extend: {
   // A versão do index.html precisa ser copiada daqui (VERSAO_INDEX
   // dentro do próprio index.html) sempre que você atualizar os dois juntos.
   // ============================================================
-  const VERSAO_ADMIN = '1.4.0 · 05/11/2026';
-  const VERSAO_INDEX_PUBLICO = '1.4.0 · 05/11/2026';
+  const VERSAO_ADMIN = '1.5.0 · 10/11/2026';
+  const VERSAO_INDEX_PUBLICO = '1.5.0 · 10/11/2026';
 
   async function mostrarVersoes() {
     const el = document.getElementById('versoesInfo');
@@ -97,6 +97,7 @@ tailwind.config = { theme: { extend: {
     <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap" data-tab="estoque" data-perm="estoque">Estoque</button>
     <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap" data-tab="produtos" data-perm="produtos">Produtos (Loja)</button>
     <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap" data-tab="clube" data-perm="clube">Clube</button>
+    <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap" data-tab="pedidos" data-perm="pedidos">Pedidos online</button>
     <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap admin-only hidden" data-tab="mesas">Mesas</button>
     <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap admin-only hidden" data-tab="usuarios">Usuários</button>
     <button class="tab-btn px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider whitespace-nowrap admin-only hidden" data-tab="auditoria">Auditoria</button>
@@ -347,6 +348,19 @@ tailwind.config = { theme: { extend: {
       <div id="ckLista" class="bg-white rounded-2xl border border-nude-200 divide-y divide-nude-100"></div>
     </div>
 
+    <!-- Pedidos online (apostilas e curso — Mercado Pago) -->
+    <div class="tab-content hidden" id="tab-pedidos">
+      <h2 class="font-serif text-2xl font-bold mb-3">Pedidos online (apostilas e curso)</h2>
+      <div id="pedStatus" class="mb-4"></div>
+      <div class="bg-white rounded-2xl border border-nude-200 p-4 mb-4">
+        <h3 class="font-bold mb-1">Catálogo digital — preços e links de entrega</h3>
+        <p class="text-xs text-charcoal/50 mb-3">O preço cobrado do cliente é sempre o desta tabela. Cole em "Link de entrega" o link (Drive, por exemplo) que o cliente recebe por e-mail após pagar. Na Coleção Completa, se o link ficar vazio, o cliente recebe o link de cada apostila.</p>
+        <div id="pedCatalogo" class="divide-y divide-nude-100"></div>
+      </div>
+      <h3 class="font-bold mb-2">Pedidos recebidos</h3>
+      <div id="pedLista" class="bg-white rounded-2xl border border-nude-200 divide-y divide-nude-100"></div>
+    </div>
+
     <!-- Auditoria (admin) -->
     <div class="tab-content hidden" id="tab-auditoria">
       <h2 class="font-serif text-2xl font-bold mb-3">Auditoria — quem fez o quê</h2>
@@ -455,6 +469,7 @@ function carregarAbaAtual(tab){
   if (tab === 'estoque') carregarEstoque();
   if (tab === 'produtos') carregarProdutos();
   if (tab === 'clube') carregarClube();
+  if (tab === 'pedidos') carregarPedidos();
   if (tab === 'auditoria') carregarAuditoria();
   if (tab === 'agendamentos') carregarAgendamentos();
   if (tab === 'atendimentos') carregarAtendimentos();
@@ -498,11 +513,11 @@ async function carregarAgendamentos(){
 
   tbody.innerHTML = r.agendamentos.map(a => `
     <tr class="border-t border-nude-100">
-      <td class="p-3 ledger-num">${a.data}</td><td class="p-3 ledger-num">${a.hora}</td><td class="p-3">${a.mesa}</td>
-      <td class="p-3">${a.nome}<br><span class="text-charcoal/40">${a.telefone}</span></td>
-      <td class="p-3">${a.servico}</td><td class="p-3 ledger-num">${fmt(a.valorServico)}</td>
-      <td class="p-3">${fmt(a.sinal)}<br><span class="text-xs text-charcoal/40">${a.sinalStatus}</span></td>
-      <td class="p-3"><span class="badge ${corStatus[a.status]||''}">${a.status}</span></td>
+      <td class="p-3 ledger-num">${esc(a.data)}</td><td class="p-3 ledger-num">${esc(a.hora)}</td><td class="p-3">${esc(a.mesa)}</td>
+      <td class="p-3">${esc(a.nome)}<br><span class="text-charcoal/40">${esc(a.telefone)}</span></td>
+      <td class="p-3">${esc(a.servico)}</td><td class="p-3 ledger-num">${fmt(a.valorServico)}</td>
+      <td class="p-3">${fmt(a.sinal)}<br><span class="text-xs text-charcoal/40">${esc(a.sinalStatus)}</span></td>
+      <td class="p-3"><span class="badge ${corStatus[a.status]||''}">${esc(a.status)}</span></td>
       <td class="p-3 space-y-1">
         ${a.status === 'Iniciado' || a.status === 'Concluido' ? `<button onclick="iniciarAtendimento('${a.id}')" class="block text-xs font-bold bg-charcoal text-white px-2 py-1 rounded">Iniciar Atendimento</button>` : ''}
         ${a.status !== 'Cancelado' && a.status !== 'Reutilizado' && a.status !== 'Atendido' && a.status !== 'Arquivado' ? `<button onclick="marcarStatusAg('${a.id}','Cancelado')" class="block text-xs font-bold bg-warn text-white px-2 py-1 rounded">Não Compareceu</button>` : ''}
@@ -522,11 +537,8 @@ async function zerarAgendamentosAdmin(){
 async function iniciarAtendimento(agendamentoId){
   let profissionalId = SESSAO.profissionalId;
   if (SESSAO.papel === 'Admin') {
-    const r = await apiGet('listarProfissionais');
-    const opcoes = r.profissionais.map(p => `${p.id} - ${p.nome}`).join('\n');
-    const escolha = prompt('Qual profissional vai atender?\n' + opcoes + '\n\nDigite o ID (ex: P123):');
-    if (!escolha) return;
-    profissionalId = escolha.trim();
+    profissionalId = await escolherProfissional('Qual Nail Designer vai atender?');
+    if (!profissionalId) return;
   }
   const r = await apiPost('iniciarAtendimento', { agendamentoId, profissionalId });
   alert(r.ok ? r.mensagem : ('Erro: ' + r.erro));
@@ -550,9 +562,9 @@ async function carregarAtendimentos(){
   tbody.innerHTML = r.atendimentos.map(a => `
     <tr class="border-t border-nude-100">
       <td class="p-3 ledger-num">${new Date(a.dataInicio).toLocaleString('pt-BR')}</td>
-      <td class="p-3">${a.nomeCliente}</td><td class="p-3">${a.servico}</td><td class="p-3">${a.profissionalNome}</td>
+      <td class="p-3">${esc(a.nomeCliente)}</td><td class="p-3">${esc(a.servico)}</td><td class="p-3">${esc(a.profissionalNome)}</td>
       <td class="p-3 ledger-num">${fmt(a.valorServico)}</td>
-      <td class="p-3"><span class="badge ${a.status==='Concluído'?'bg-green-100 text-green-700':'bg-amber-100 text-amber-700'}">${a.status}</span></td>
+      <td class="p-3"><span class="badge ${a.status==='Concluído'?'bg-green-100 text-green-700':'bg-amber-100 text-amber-700'}">${esc(a.status)}</span></td>
       <td class="p-3 space-y-1">
         ${a.status !== 'Concluído' ? `<button onclick="finalizarAtendimento('${a.id}')" class="block text-xs font-bold bg-charcoal text-white px-2 py-1 rounded">Finalizar</button>` : ''}
         ${SESSAO.papel === 'Admin' ? `<button onclick="trocarProfissional('${a.id}')" class="block text-xs font-bold border border-nude-300 text-charcoal px-2 py-1 rounded">Trocar Nail Designer</button>` : ''}
@@ -561,12 +573,9 @@ async function carregarAtendimentos(){
 }
 
 async function trocarProfissional(atendimentoId){
-  const r = await apiGet('listarProfissionais');
-  if (!r.ok || !r.profissionais.length) { alert('Nenhum profissional cadastrado.'); return; }
-  const opcoes = r.profissionais.map(p => `${p.id} - ${p.nome}`).join('\n');
-  const escolha = prompt('Reatribuir para qual profissional?\n' + opcoes + '\n\nDigite o ID (ex: P123):');
+  const escolha = await escolherProfissional('Reatribuir para qual Nail Designer?');
   if (!escolha) return;
-  const resultado = await apiPost('trocarProfissionalAtendimento', { atendimentoId, profissionalId: escolha.trim() });
+  const resultado = await apiPost('trocarProfissionalAtendimento', { atendimentoId, profissionalId: escolha });
   alert(resultado.ok ? resultado.mensagem : ('Erro: ' + resultado.erro));
   carregarAtendimentos();
 }
@@ -592,17 +601,17 @@ function renderizarClienteEditavel(c){
   const el = document.getElementById('clienteResultado');
   el.innerHTML = `
     <div class="space-y-2">
-      <div class="flex items-center gap-2"><strong>${c.nome}</strong> ${c.vip ? '<span class="badge bg-gold-100 text-gold-700">VIP</span>' : ''}</div>
-      <div class="text-charcoal/50">CPF: ${cpfTxt(c.cpf)} · Último atendimento: ${c.ultimoAtendimento || 'nunca'} · Total: ${c.totalAtendimentos}</div>
+      <div class="flex items-center gap-2"><strong>${esc(c.nome)}</strong> ${c.vip ? '<span class="badge bg-gold-100 text-gold-700">VIP</span>' : ''}</div>
+      <div class="text-charcoal/50">CPF: ${cpfTxt(c.cpf)} · Último atendimento: ${esc(c.ultimoAtendimento) || 'nunca'} · Total: ${esc(c.totalAtendimentos)}</div>
       <div class="grid sm:grid-cols-3 gap-2 pt-2">
-        <input id="editClienteNome" value="${c.nome}" placeholder="Nome" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
-        <input id="editClienteTelefone" value="${c.telefone}" placeholder="Telefone" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
-        <input id="editClienteEmail" value="${c.email || ''}" placeholder="E-mail" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <input id="editClienteNome" value="${esc(c.nome)}" placeholder="Nome" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <input id="editClienteTelefone" value="${esc(c.telefone)}" placeholder="Telefone" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
+        <input id="editClienteEmail" value="${esc(c.email)}" placeholder="E-mail" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
       </div>
       <div class="flex gap-2 pt-1">
-        <button onclick="salvarEdicaoCliente('${c.cpf}')" class="text-sm font-bold bg-charcoal text-white px-3 py-1.5 rounded">Salvar alterações</button>
-        <button onclick="alternarVip('${c.cpf}', ${!c.vip})" class="text-sm font-bold border border-gold-500 text-gold-700 px-3 py-1.5 rounded">${c.vip ? 'Remover VIP' : 'Marcar como VIP'}</button>
-        <button onclick="excluirClienteAdmin('${c.cpf}', '${c.nome.replace(/'/g,"")}')" class="text-sm font-bold bg-warn text-white px-3 py-1.5 rounded">Excluir Cliente</button>
+        <button onclick="salvarEdicaoCliente('${esc(c.cpf)}')" class="text-sm font-bold bg-charcoal text-white px-3 py-1.5 rounded">Salvar alterações</button>
+        <button onclick="alternarVip('${esc(c.cpf)}', ${!c.vip})" class="text-sm font-bold border border-gold-500 text-gold-700 px-3 py-1.5 rounded">${c.vip ? 'Remover VIP' : 'Marcar como VIP'}</button>
+        <button onclick="excluirClienteAdmin('${esc(c.cpf)}', '${esc(String(c.nome).replace(/'/g,''))}')" class="text-sm font-bold bg-warn text-white px-3 py-1.5 rounded">Excluir Cliente</button>
       </div>
     </div>`;
 }
@@ -638,10 +647,10 @@ async function carregarClientes(){
   el.innerHTML = r.clientes.map(c => `
     <div class="p-3 text-sm flex items-center justify-between gap-2">
       <div>
-        <strong>${c.nome}</strong> ${c.vip ? '<span class="badge bg-gold-100 text-gold-700">VIP</span>' : ''}<br>
-        <span class="text-charcoal/40">CPF: ${cpfTxt(c.cpf)} · Tel: ${c.telefone} · Último atendimento: ${c.ultimoAtendimento || 'nunca'}</span>
+        <strong>${esc(c.nome)}</strong> ${c.vip ? '<span class="badge bg-gold-100 text-gold-700">VIP</span>' : ''}<br>
+        <span class="text-charcoal/40">CPF: ${cpfTxt(c.cpf)} · Tel: ${esc(c.telefone)} · Último atendimento: ${esc(c.ultimoAtendimento) || 'nunca'}</span>
       </div>
-      <button onclick="document.getElementById('buscaClienteCpf').value='${c.cpf}'; buscarClienteAdmin(); window.scrollTo({top:0,behavior:'smooth'});" class="text-sm font-bold border border-nude-300 px-3 py-1.5 rounded shrink-0">Editar</button>
+      <button onclick="document.getElementById('buscaClienteCpf').value='${esc(c.cpf)}'; buscarClienteAdmin(); window.scrollTo({top:0,behavior:'smooth'});" class="text-sm font-bold border border-nude-300 px-3 py-1.5 rounded shrink-0">Editar</button>
     </div>`).join('') || '<p class="p-3 text-charcoal/40 text-sm">Nenhum cliente cadastrado ainda.</p>';
 }
 
@@ -653,8 +662,8 @@ async function carregarRetorno(){
   if (rCancel.ok) {
     elCancel.innerHTML = rCancel.clientes.map(c => `
       <div class="bg-white rounded-xl border border-nude-200 p-3 text-sm flex items-center justify-between gap-2">
-        <div><strong>${c.nome}</strong><br>Faltou em ${c.data} às ${c.hora}</div>
-        <a target="_blank" href="https://wa.me/55${c.telefone.replace(/\\D/g,'')}?text=${encodeURIComponent('Oi ' + c.nome + '! Vimos que você não pôde comparecer ao seu horário no Studio 14. No seu próximo agendamento você não precisa pagar os R$ 30 de sinal :) Quer marcar um novo horário?')}"
+        <div><strong>${esc(c.nome)}</strong><br>Faltou em ${esc(c.data)} às ${esc(c.hora)}</div>
+        <a target="_blank" href="https://wa.me/55${String(c.telefone).replace(/\D/g,'')}?text=${encodeURIComponent('Oi ' + c.nome + '! Vimos que você não pôde comparecer ao seu horário no Studio 14. No seu próximo agendamento você não precisa pagar os R$ 30 de sinal :) Quer marcar um novo horário?')}"
            class="text-xs font-bold bg-ok text-white px-2 py-1.5 rounded whitespace-nowrap"><i class="fa-brands fa-whatsapp mr-1"></i>WhatsApp</a>
       </div>`).join('') || '<p class="text-charcoal/40 text-sm">Nenhum cliente nessa situação.</p>';
   }
@@ -664,8 +673,8 @@ async function carregarRetorno(){
   if (rRetorno.ok) {
     elRetorno.innerHTML = rRetorno.clientes.map(c => `
       <div class="bg-white rounded-xl border border-nude-200 p-3 text-sm flex items-center justify-between gap-2">
-        <div><strong>${c.nome}</strong> ${c.vip ? '<span class="badge bg-gold-100 text-gold-700">VIP</span>' : ''}<br>${c.diasSemAtendimento} dias sem vir (última vez: ${c.ultimoAtendimento})</div>
-        <a target="_blank" href="https://wa.me/55${c.telefone.replace(/\\D/g,'')}?text=${encodeURIComponent('Oi ' + c.nome + '! Faz um tempinho que você não vem ao Studio 14 :) Bora marcar sua manutenção?')}"
+        <div><strong>${esc(c.nome)}</strong> ${c.vip ? '<span class="badge bg-gold-100 text-gold-700">VIP</span>' : ''}<br>${c.diasSemAtendimento} dias sem vir (última vez: ${esc(c.ultimoAtendimento)})</div>
+        <a target="_blank" href="https://wa.me/55${String(c.telefone).replace(/\D/g,'')}?text=${encodeURIComponent('Oi ' + c.nome + '! Faz um tempinho que você não vem ao Studio 14 :) Bora marcar sua manutenção?')}"
            class="text-xs font-bold bg-ok text-white px-2 py-1.5 rounded whitespace-nowrap"><i class="fa-brands fa-whatsapp mr-1"></i>WhatsApp</a>
       </div>`).join('') || '<p class="text-charcoal/40 text-sm">Nenhum cliente de retorno no momento.</p>';
   }
@@ -682,7 +691,7 @@ async function carregarServicos(){
   el.innerHTML = r.servicos.map((s, i) => `
     <div class="p-3 text-sm flex items-center justify-between gap-2 flex-wrap">
       <div><strong>${esc(s.nome)}</strong> <span class="text-charcoal/40">(${esc(s.categoria)})</span></div>
-      <div class="flex items-center gap-2"><span class="ledger-num">${fmt(s.valor)} · ${s.duracaoMin} min</span>
+      <div class="flex items-center gap-2"><span class="ledger-num">${fmt(s.valor)} · ${esc(s.duracaoMin)} min</span>
         ${SESSAO.papel === 'Admin' ? `<button onclick="editarServicoForm(${i})" class="text-xs font-bold border border-nude-300 px-2 py-1 rounded">Editar</button><button onclick="desativarServico(${i})" class="text-xs font-bold bg-warn text-white px-2 py-1 rounded">Desativar</button>` : ''}</div>
     </div>`).join('') || '<p class="p-3 text-charcoal/40 text-sm">Nenhum serviço cadastrado.</p>';
 }
@@ -711,7 +720,7 @@ async function carregarProfissionais(){
   el.innerHTML = r.profissionais.map((p, i) => `
     <div class="p-3 text-sm flex items-center justify-between gap-2 flex-wrap">
       <div><strong>${esc(p.nome)}</strong> <span class="text-charcoal/40">(${esc(p.especialidades) || 'sem especialidade definida'})</span></div>
-      <div class="flex items-center gap-2"><span class="ledger-num">Comissão: ${p.comissaoPercent}%</span>
+      <div class="flex items-center gap-2"><span class="ledger-num">Comissão: ${esc(p.comissaoPercent)}%</span>
         ${SESSAO.papel === 'Admin' ? `<button onclick="editarProfForm(${i})" class="text-xs font-bold border border-nude-300 px-2 py-1 rounded">Editar</button><button onclick="desativarProf(${i})" class="text-xs font-bold bg-warn text-white px-2 py-1 rounded">Desativar</button>` : ''}</div>
     </div>`).join('') || '<p class="p-3 text-charcoal/40 text-sm">Nenhum profissional cadastrado.</p>';
   popularSelectProfissionais(r.profissionais);
@@ -719,7 +728,7 @@ async function carregarProfissionais(){
 
 function popularSelectProfissionais(lista){
   const sel = document.getElementById('novoUsuProfissional');
-  sel.innerHTML = lista.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+  sel.innerHTML = lista.map(p => `<option value="${p.id}">${esc(p.nome)}</option>`).join('');
 }
 
 async function cadastrarProfissional(){
@@ -777,12 +786,12 @@ async function carregarUsuarios(){
   if (!r.ok) { el.innerHTML = `<p class="p-3 text-warn text-sm">${r.erro}</p>`; return; }
   el.innerHTML = r.usuarios.map(u => `
     <div class="p-3 text-sm flex items-center gap-3">
-      ${u.fotoUrl ? `<img src="${u.fotoUrl}" class="w-9 h-9 rounded-full object-cover border border-nude-200">` : `<div class="w-9 h-9 rounded-full bg-nude-100 flex items-center justify-center text-charcoal/30"><i class="fa-solid fa-user"></i></div>`}
+      ${/^https:\/\//.test(u.fotoUrl) ? `<img src="${esc(u.fotoUrl)}" class="w-9 h-9 rounded-full object-cover border border-nude-200">` : `<div class="w-9 h-9 rounded-full bg-nude-100 flex items-center justify-center text-charcoal/30"><i class="fa-solid fa-user"></i></div>`}
       <div class="flex-1">
-        <strong>${u.nome}</strong> (${u.login})<br>
-        <span class="text-charcoal/40">${u.papel === 'Admin' ? 'Acesso total' : (u.permissoes || 'sem permissões definidas')}${u.cpf ? ' · CPF: ' + u.cpf : ''}${u.email ? ' · ' + u.email : ''}</span>
+        <strong>${esc(u.nome)}</strong> (${esc(u.login)})<br>
+        <span class="text-charcoal/40">${u.papel === 'Admin' ? 'Acesso total' : (u.permissoes || 'sem permissões definidas')}${u.cpf ? ' · CPF: ' + esc(u.cpf) : ''}${u.email ? ' · ' + esc(u.email) : ''}</span>
       </div>
-      <span class="badge ${u.papel==='Admin'?'bg-gold-100 text-gold-700':'bg-nude-100 text-charcoal/60'}">${u.papel}</span>
+      <span class="badge ${u.papel==='Admin'?'bg-gold-100 text-gold-700':'bg-nude-100 text-charcoal/60'}">${esc(u.papel)}</span>
     </div>`).join('') || '<p class="p-3 text-charcoal/40 text-sm">Nenhum usuário cadastrado.</p>';
 }
 
@@ -828,7 +837,7 @@ async function cadastrarUsuario(){
 // ============================================================
 // v1.4 — helpers
 // ============================================================
-function cpfTxt(c){ c=String(c||''); return c.length===11 ? c : 'sem CPF'; }
+function cpfTxt(c){ c=String(c||'').replace(/\D/g,''); if(c.length>0 && c.length<11) c=c.padStart(11,'0'); return c.length===11 ? c : 'sem CPF'; }
 function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function msg(r){ alert(r.ok ? r.mensagem : ('Erro: ' + r.erro)); return r.ok; }
 function hojeYmd(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
@@ -1106,13 +1115,76 @@ async function excluirMesaAdmin(i){
 // ============================================================
 const PERMISSOES_DISPONIVEIS = [
   ['dashboard','Dashboard'], ['agendamentos','Agendamentos'], ['atendimentos','Atendimentos'], ['clientes','Clientes'], ['retorno','Retorno'],
-  ['servicos','Serviços'], ['profissionais','Profissionais'], ['financeiro','Financeiro'], ['estoque','Estoque'], ['produtos','Produtos'], ['clube','Clube']
+  ['servicos','Serviços'], ['profissionais','Profissionais'], ['financeiro','Financeiro'], ['estoque','Estoque'], ['produtos','Produtos'], ['clube','Clube'], ['pedidos','Pedidos online']
 ];
 document.addEventListener('DOMContentLoaded', () => {
   novoUsuPermissoes.innerHTML = PERMISSOES_DISPONIVEIS.map(([k, n]) => `<label class="flex items-center gap-1"><input type="checkbox" class="perm-chk" value="${k}" ${['agendamentos','atendimentos','clientes'].includes(k) ? 'checked' : ''}> ${n}</label>`).join('');
   finRef.value = hojeYmd();
 });
 function permissoesMarcadas(){ return [...document.querySelectorAll('.perm-chk:checked')].map(c => c.value).join(','); }
+
+// ============================================================
+// v1.5 — escolher profissional (sem digitar ID) e Pedidos online
+// ============================================================
+async function escolherProfissional(titulo){
+  const r = await apiGet('listarProfissionais');
+  if (!r.ok || !r.profissionais.length) { alert('Nenhum profissional cadastrado.'); return null; }
+  return new Promise(resolve => {
+    const ov = document.createElement('div');
+    ov.className = 'fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4';
+    ov.innerHTML = `<div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-2">
+      <h3 class="font-bold mb-1">${esc(titulo)}</h3>
+      ${r.profissionais.map(p => `<button data-id="${esc(p.id)}" class="w-full text-left px-3 py-2.5 rounded-lg border border-nude-300 hover:bg-nude-100 font-semibold">${esc(p.nome)}</button>`).join('')}
+      <button data-id="" class="w-full text-sm text-charcoal/50 py-2">Cancelar</button></div>`;
+    ov.addEventListener('click', e => {
+      const b = e.target.closest('button');
+      if (!b && e.target !== ov) return;
+      document.body.removeChild(ov);
+      resolve(b && b.dataset.id ? b.dataset.id : null);
+    });
+    document.body.appendChild(ov);
+  });
+}
+
+let CATALOGO_ADMIN = [];
+async function carregarPedidos(){
+  const [st, cat, ped] = await Promise.all([apiGet('statusPagamentos'), apiGet('listarCatalogoDigital'), apiGet('listarPedidos')]);
+  if (!st.ok) { pedStatus.innerHTML = `<p class="text-warn text-sm">${esc(st.erro)}</p>`; return; }
+  const aviso = (ok, txt) => `<div class="rounded-xl p-3 text-sm ${ok ? 'bg-green-50 text-green-700' : 'bg-red-50 text-warn font-bold'}"><i class="fa-solid ${ok ? 'fa-circle-check' : 'fa-triangle-exclamation'} mr-1"></i>${txt}</div>`;
+  pedStatus.innerHTML = `<div class="grid sm:grid-cols-2 gap-2">
+    ${aviso(st.tokenConfigurado, st.tokenConfigurado ? 'Mercado Pago configurado (Access Token encontrado).' : 'Falta o Access Token do Mercado Pago (Propriedades do script → MP_ACCESS_TOKEN). Sem ele, nenhuma venda funciona.')}
+    ${aviso(st.gatilhoInstalado, st.gatilhoInstalado ? 'Conferência automática de Pix/boleto ativa (a cada 10 min).' : 'Rode instalarGatilhoPagamentos no Apps Script para confirmar Pix/boleto sozinho.')}</div>`;
+
+  CATALOGO_ADMIN = cat.ok ? cat.itens : [];
+  pedCatalogo.innerHTML = CATALOGO_ADMIN.map((i, n) => `
+    <div class="py-2 grid md:grid-cols-12 gap-2 items-center text-sm">
+      <div class="md:col-span-3 font-semibold">${esc(i.Nome)}</div>
+      <input id="catPreco${n}" type="number" step="0.01" value="${esc(i.Preco)}" class="md:col-span-2 border border-nude-300 rounded-lg px-3 py-2">
+      <input id="catLink${n}" value="${esc(i.LinkEntrega)}" placeholder="Link de entrega (https://...)" class="md:col-span-4 border border-nude-300 rounded-lg px-3 py-2">
+      <label class="md:col-span-1 flex items-center gap-1"><input id="catAtivo${n}" type="checkbox" ${i.Ativo === 'Sim' ? 'checked' : ''}> Ativo</label>
+      <button onclick="salvarCatalogo(${n})" class="md:col-span-2 text-xs font-bold bg-charcoal text-white px-3 py-2 rounded-lg">Salvar</button>
+    </div>`).join('') || '<p class="text-sm text-charcoal/40">Catálogo vazio. Rode migrarPlanilhaV4 no Apps Script.</p>';
+
+  const cor = { approved:'bg-green-100 text-green-700', pending:'bg-amber-100 text-amber-700', in_process:'bg-amber-100 text-amber-700', rejected:'bg-red-100 text-red-700', cancelled:'bg-red-100 text-red-700', erro:'bg-red-100 text-red-700' };
+  const nomeStatus = { approved:'Aprovado', pending:'Aguardando pagamento', in_process:'Em análise', rejected:'Recusado', cancelled:'Cancelado', erro:'Erro', criando:'Iniciado', refunded:'Estornado' };
+  if (!ped.ok) { pedLista.innerHTML = `<p class="p-3 text-warn text-sm">${esc(ped.erro)}</p>`; return; }
+  pedLista.innerHTML = ped.pedidos.map(p => `
+    <div class="p-3 text-sm flex items-center justify-between gap-2 flex-wrap">
+      <div><strong>${esc(p.Nome)}</strong> <span class="badge ${cor[p.Status] || 'bg-nude-100 text-charcoal/60'}">${nomeStatus[p.Status] || esc(p.Status)}</span>
+        ${p.Status === 'approved' ? `<span class="badge ${p.Entregue === 'Sim' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${p.Entregue === 'Sim' ? 'Entregue' : 'Entrega pendente'}</span>` : ''}<br>
+        <span class="text-charcoal/50">${esc(String(p.DataHora))} · ${esc(p.Email)} · ${esc(p.Metodo)}<br>${esc(p.itensLista)}${p.Detalhe ? '<br><em>' + esc(p.Detalhe) + '</em>' : ''}</span></div>
+      <div class="flex items-center gap-2"><span class="ledger-num font-bold">${fmt(p.Total)}</span>
+        ${p.MPPaymentID && p.Status !== 'approved' ? `<button onclick="verificarPedido('${esc(p.ID)}')" class="text-xs font-bold border border-nude-300 px-2 py-1 rounded">Verificar no Mercado Pago</button>` : ''}
+        ${p.Status === 'approved' ? `<button onclick="reenviarEntrega('${esc(p.ID)}')" class="text-xs font-bold bg-charcoal text-white px-2 py-1 rounded">Reenviar e-mail</button>` : ''}</div>
+    </div>`).join('') || '<p class="p-3 text-charcoal/40 text-sm">Nenhum pedido ainda.</p>';
+}
+async function salvarCatalogo(n){
+  const i = CATALOGO_ADMIN[n];
+  const r = await apiPost('salvarCatalogoItem', { id: i.ID, preco: document.getElementById('catPreco' + n).value, linkEntrega: document.getElementById('catLink' + n).value, ativo: document.getElementById('catAtivo' + n).checked });
+  if (msg(r)) carregarPedidos();
+}
+async function verificarPedido(id){ msg(await apiPost('verificarPedido', { pedidoId: id })); carregarPedidos(); }
+async function reenviarEntrega(id){ if (!confirm('Reenviar o e-mail de entrega para o cliente?')) return; msg(await apiPost('reenviarEntrega', { pedidoId: id })); carregarPedidos(); }
 </script>
 </body>
 </html>
