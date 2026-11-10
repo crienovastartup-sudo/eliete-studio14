@@ -1236,6 +1236,7 @@
                 <p id="confirmacaoTexto" class="text-sm text-charcoal/70 max-w-sm mx-auto">
                     Assim que a confirmação do pagamento chegar, sua apostila/curso será enviado automaticamente para o e-mail cadastrado.
                 </p>
+                <div id="confirmacaoExtra" class="space-y-3"></div>
                 <button onclick="closeCheckoutModal()" class="px-6 py-2.5 rounded-full border border-charcoal text-xs font-bold uppercase tracking-wider">
                     Fechar
                 </button>
@@ -1527,7 +1528,7 @@
         // CONTROLE DE VERSÃO deste arquivo (index.html)
         // Atualize esse valor manualmente sempre que subir uma nova versão.
         // ============================================================
-        const VERSAO_INDEX = '1.4.0 · 05/11/2026';
+        const VERSAO_INDEX = '1.5.0 · 10/11/2026';
         document.addEventListener('DOMContentLoaded', () => {
             const el = document.getElementById('siteVersion');
             if (el) el.textContent = `Studio 14 · v${VERSAO_INDEX}`;
@@ -1912,11 +1913,9 @@
         // deve ficar no site — ela mora só no servidor (pasta /server).
         // ============================================================
         const MP_CONFIG = {
-            PUBLIC_KEY: 'COLE_AQUI_SUA_PUBLIC_KEY_MERCADO_PAGO',
-            // URL do seu backend (veja a pasta /server) que cria o pagamento
-            // usando a Access Token e confirma o status. Não pode ser o
-            // GitHub Pages — precisa de um servidor (Render, Railway etc.)
-            BACKEND_URL: 'COLE_AQUI_A_URL_DO_SEU_BACKEND'
+            // Só a Public Key fica aqui. O pagamento é finalizado no Apps Script
+            // (WEBAPP_URL), que guarda a Access Token nas Propriedades do script.
+            PUBLIC_KEY: 'COLE_AQUI_SUA_PUBLIC_KEY_MERCADO_PAGO'
         };
 
         const mp = (MP_CONFIG.PUBLIC_KEY.indexOf('COLE_AQUI') === -1)
@@ -1942,6 +1941,20 @@
         // Se a pessoa sair do site e voltar em uma nova sessão (ou
         // fechar a aba), o carrinho zera automaticamente.
         // ============================================================
+        // Preços oficiais vêm da planilha (aba CatalogoDigital). Se o servidor não
+        // responder, usamos o valor padrão — e o servidor confere de qualquer forma.
+        let CATALOGO_DIGITAL = {};
+        function precoDigital(id, padrao) {
+            return (CATALOGO_DIGITAL[id] !== undefined) ? CATALOGO_DIGITAL[id] : padrao;
+        }
+        async function carregarCatalogoDigital() {
+            try {
+                const r = await (await fetch(`${WEBAPP_URL}?action=catalogoDigital`)).json();
+                if (r.ok) r.itens.forEach(i => { CATALOGO_DIGITAL[i.id] = i.preco; });
+            } catch (e) { /* segue com os valores padrão */ }
+        }
+        document.addEventListener('DOMContentLoaded', carregarCatalogoDigital);
+
         function getCart() {
             try {
                 return JSON.parse(sessionStorage.getItem('studio14_cart') || '[]');
@@ -1995,7 +2008,7 @@
                     alert('A Coleção Completa já está no seu carrinho.');
                     return;
                 }
-                item = { tipo: 'colecao', nome: 'Coleção Completa (9 Apostilas)', preco: 109.99 };
+                item = { tipo: 'colecao', id: 'colecao', nome: 'Coleção Completa (9 Apostilas)', preco: precoDigital('colecao', 109.99) };
             } else {
                 const select = document.getElementById('apostilaAvulsaSelect');
                 const apostilaId = select.value;
@@ -2003,7 +2016,7 @@
                     alert('Essa apostila já está no seu carrinho.');
                     return;
                 }
-                item = { tipo: 'avulsa', apostilaId, nome: `Apostila Avulsa: ${APOSTILAS[apostilaId]}`, preco: 19.90 };
+                item = { tipo: 'avulsa', id: apostilaId, apostilaId, nome: `Apostila Avulsa: ${APOSTILAS[apostilaId]}`, preco: precoDigital(apostilaId, 19.90) };
             }
 
             // Adiciona ao carrinho existente — dá para levar várias apostilas avulsas
@@ -2051,7 +2064,7 @@
 
         // Curso Online entra direto no carrinho (sem etapa de seleção)
         function comprarCursoOnline() {
-            saveCart([{ tipo: 'curso', nome: 'Curso Online Master Nail Pro', preco: 497.00 }]);
+            saveCart([{ tipo: 'curso', id: 'curso', nome: 'Curso Online Master Nail Pro', preco: precoDigital('curso', 497.00) }]);
             openCheckoutModal();
         }
 
@@ -2084,6 +2097,7 @@
         }
 
         function closeCheckoutModal() {
+            pararPollingPedido();
             document.getElementById('checkoutModal').classList.add('hidden');
         }
 
@@ -2184,18 +2198,21 @@
                         console.error('Erro no Payment Brick:', error);
                     },
                     onSubmit: ({ selectedPaymentMethod, formData }) => {
-                        // Envia os dados do pagamento (tokenizados pelo próprio
-                        // Mercado Pago) + os dados do comprador + o carrinho
-                        // para o SEU backend, que finaliza a cobrança com a
-                        // Access Token (secreta) e nunca fica exposta aqui.
+                        // Os dados do cartão são tokenizados pelo próprio Mercado Pago.
+                        // Enviamos ao Apps Script só o token + os IDs dos itens: o VALOR é
+                        // recalculado no servidor, pelo catálogo (nunca confiamos no do navegador).
                         return new Promise((resolve, reject) => {
-                            fetch(`${MP_CONFIG.BACKEND_URL}/process_payment`, {
+                            const cart = getCart();
+                            fetch(WEBAPP_URL, {
                                 method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
+                                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                                 body: JSON.stringify({
-                                    ...formData,
+                                    action: 'processarPagamento',
+                                    apiKey: APP_API_KEY,
+                                    formData: formData,
                                     comprador: compradorAtual,
-                                    itens: getCart()
+                                    itens: cart.map(i => ({ id: i.id })),
+                                    totalExibido: cartTotal(cart)
                                 })
                             })
                                 .then(resp => resp.json())
@@ -2214,34 +2231,114 @@
             });
         }
 
+        let pollingPedido = null;
+
+        function pararPollingPedido() {
+            if (pollingPedido) { clearInterval(pollingPedido); pollingPedido = null; }
+        }
+
+        function estiloConfirmacao(tipo) {
+            const cores = { ok: ['bg-green-100 text-green-600', 'fa-circle-check'], espera: ['bg-amber-100 text-amber-600', 'fa-clock'], erro: ['bg-red-100 text-red-600', 'fa-circle-xmark'] }[tipo];
+            const iconeEl = document.getElementById('confirmacaoIcone');
+            iconeEl.className = `w-16 h-16 mx-auto rounded-full ${cores[0]} flex items-center justify-center text-3xl`;
+            iconeEl.innerHTML = `<i class="fa-solid ${cores[1]}"></i>`;
+        }
+
+        function mostrarAprovado() {
+            pararPollingPedido();
+            estiloConfirmacao('ok');
+            document.getElementById('confirmacaoTitulo').textContent = 'Pagamento aprovado!';
+            document.getElementById('confirmacaoTexto').textContent = 'Enviamos o acesso para o seu e-mail. Se não encontrar, olhe a caixa de spam.';
+            document.getElementById('confirmacaoExtra').innerHTML = '';
+            clearCart();
+        }
+
+        const MOTIVOS_RECUSA = {
+            cc_rejected_insufficient_amount: 'Saldo ou limite insuficiente no cartão.',
+            cc_rejected_bad_filled_security_code: 'Código de segurança (CVV) incorreto.',
+            cc_rejected_bad_filled_date: 'Data de validade incorreta.',
+            cc_rejected_bad_filled_other: 'Confira os dados do cartão.',
+            cc_rejected_call_for_authorize: 'Seu banco pede autorização: ligue para o banco e tente de novo.',
+            cc_rejected_high_risk: 'Pagamento recusado por segurança. Tente outra forma de pagamento.'
+        };
+
         function exibirConfirmacao(resultado) {
+            pararPollingPedido();
             document.getElementById('checkoutStepPagamento').classList.add('hidden');
             document.getElementById('checkoutStepConfirmacao').classList.remove('hidden');
 
-            const iconeEl = document.getElementById('confirmacaoIcone');
             const tituloEl = document.getElementById('confirmacaoTitulo');
             const textoEl = document.getElementById('confirmacaoTexto');
+            const extraEl = document.getElementById('confirmacaoExtra');
+            extraEl.innerHTML = '';
 
-            if (resultado.status === 'approved') {
-                iconeEl.className = 'w-16 h-16 mx-auto rounded-full bg-green-100 text-green-600 flex items-center justify-center text-3xl';
-                iconeEl.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
-                tituloEl.textContent = 'Pagamento aprovado!';
-                textoEl.textContent = 'Seu produto digital já está sendo enviado para o e-mail cadastrado.';
-                clearCart();
-            } else if (resultado.status === 'pending' || resultado.status === 'in_process') {
-                iconeEl.className = 'w-16 h-16 mx-auto rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-3xl';
-                iconeEl.innerHTML = '<i class="fa-solid fa-clock"></i>';
-                tituloEl.textContent = 'Pagamento em processamento';
-                textoEl.textContent = resultado.paymentMethod === 'ticket'
-                    ? 'Seu boleto foi gerado. Assim que o pagamento for compensado, você recebe o produto por e-mail automaticamente.'
-                    : 'Assim que recebermos a confirmação do Pix, o produto é enviado automaticamente para o seu e-mail.';
-                clearCart();
-            } else {
-                iconeEl.className = 'w-16 h-16 mx-auto rounded-full bg-red-100 text-red-600 flex items-center justify-center text-3xl';
-                iconeEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
-                tituloEl.textContent = 'Não foi possível confirmar o pagamento';
-                textoEl.textContent = 'Verifique os dados informados e tente novamente, ou fale com o suporte pelo WhatsApp.';
+            if (resultado.ok === false || resultado.status === 'erro') {
+                estiloConfirmacao('erro');
+                tituloEl.textContent = 'Não foi possível concluir';
+                textoEl.textContent = (resultado.erro || 'Tente novamente em instantes ou fale com o suporte pelo WhatsApp.');
+                return;
             }
+
+            if (resultado.status === 'approved') { mostrarAprovado(); return; }
+
+            if (resultado.status === 'pending' || resultado.status === 'in_process') {
+                estiloConfirmacao('espera');
+                if (resultado.paymentMethod === 'pix' && resultado.pix && resultado.pix.qrCode) {
+                    tituloEl.textContent = 'Pague com Pix';
+                    textoEl.textContent = 'Escaneie o QR Code ou use o código copia e cola no app do seu banco. Esta tela confirma sozinha assim que o pagamento cair.';
+                    extraEl.innerHTML = `
+                        <img src="data:image/png;base64,${resultado.pix.qrCodeBase64}" alt="QR Code Pix" class="w-48 h-48 mx-auto rounded-xl border border-nude-200">
+                        <textarea id="pixCopiaCola" readonly rows="3" class="w-full text-[11px] p-2 rounded-lg border border-nude-300 bg-nude-50 break-all"></textarea>
+                        <button type="button" onclick="copiarPixCopiaCola()" id="btnCopiarPix" class="w-full py-2.5 rounded-full gold-gradient-bg text-charcoal text-xs font-bold uppercase tracking-wider">Copiar código Pix</button>
+                        <p class="text-[11px] text-charcoal/50"><i class="fa-solid fa-spinner fa-spin mr-1"></i>Aguardando o pagamento...</p>`;
+                    document.getElementById('pixCopiaCola').value = resultado.pix.qrCode;
+                    iniciarPollingPedido(resultado.pedidoId);
+                } else if (resultado.paymentMethod === 'ticket') {
+                    tituloEl.textContent = 'Boleto gerado';
+                    textoEl.textContent = 'Pague o boleto no app do seu banco ou numa lotérica. O acesso chega por e-mail assim que o pagamento for compensado (até 2 dias úteis).';
+                    if (resultado.boletoUrl) {
+                        extraEl.innerHTML = `<a href="${resultado.boletoUrl}" target="_blank" rel="noopener" class="block w-full py-2.5 rounded-full gold-gradient-bg text-charcoal text-xs font-bold uppercase tracking-wider">Abrir boleto</a>`;
+                    }
+                    clearCart();
+                } else {
+                    tituloEl.textContent = 'Pagamento em análise';
+                    textoEl.textContent = 'Estamos aguardando a confirmação do pagamento. Você recebe o acesso por e-mail assim que for aprovado.';
+                    clearCart();
+                }
+                return;
+            }
+
+            estiloConfirmacao('erro');
+            tituloEl.textContent = 'Pagamento não aprovado';
+            textoEl.textContent = (MOTIVOS_RECUSA[resultado.statusDetail] || 'Verifique os dados informados e tente novamente, ou fale com o suporte pelo WhatsApp.');
+        }
+
+        function copiarPixCopiaCola() {
+            const campo = document.getElementById('pixCopiaCola');
+            const btn = document.getElementById('btnCopiarPix');
+            const feito = () => { btn.textContent = 'Código copiado!'; setTimeout(() => { btn.textContent = 'Copiar código Pix'; }, 2500); };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(campo.value).then(feito).catch(() => { campo.select(); document.execCommand('copy'); feito(); });
+            } else {
+                campo.select(); document.execCommand('copy'); feito();
+            }
+        }
+
+        // Consulta o servidor a cada 5 s (por até 15 min) até o Pix ser aprovado.
+        function iniciarPollingPedido(pedidoId) {
+            let tentativas = 0;
+            pollingPedido = setInterval(async () => {
+                tentativas++;
+                if (tentativas > 180) { pararPollingPedido(); return; }
+                try {
+                    const r = await (await fetch(`${WEBAPP_URL}?action=statusPedido&pedidoId=${encodeURIComponent(pedidoId)}`)).json();
+                    if (r.ok && r.status === 'approved') mostrarAprovado();
+                    else if (r.ok && ['rejected', 'cancelled', 'expired'].indexOf(r.status) !== -1) {
+                        pararPollingPedido();
+                        exibirConfirmacao({ ok: true, status: 'rejected', statusDetail: '' });
+                    }
+                } catch (e) { /* tenta de novo no próximo ciclo */ }
+            }, 5000);
         }
 
         // Demo Video Modal Logic (agora com vídeo real)
