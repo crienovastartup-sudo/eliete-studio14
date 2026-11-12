@@ -563,6 +563,15 @@
         </div>
     </section>
 
+    <!-- Teste de pagamento: só aparece com o flag "Modo teste" ligado no painel (aba Serviços) -->
+    <section id="blocoTestePagamento" class="hidden py-10 bg-amber-50 border-b border-amber-200">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 text-center space-y-4">
+            <span class="text-amber-700 font-bold text-xs uppercase tracking-widest"><i class="fa-solid fa-flask mr-1"></i>Modo teste de pagamento</span>
+            <p class="text-xs text-charcoal/60">Agendamentos de teste para validar o pagamento. Visível só enquanto o modo teste estiver ligado.</p>
+            <div id="testeBotoes" class="flex flex-wrap justify-center gap-3"></div>
+        </div>
+    </section>
+
     <!-- Loja: produtos cadastrados no painel (só aparece se houver produto ativo com estoque) -->
     <section id="loja" class="hidden py-20 bg-nude-100/70 border-b border-nude-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1528,7 +1537,7 @@
         // CONTROLE DE VERSÃO deste arquivo (index.html)
         // Atualize esse valor manualmente sempre que subir uma nova versão.
         // ============================================================
-        const VERSAO_INDEX = '1.5.0 · 10/11/2026';
+        const VERSAO_INDEX = '1.6.0 · 12/11/2026';
         document.addEventListener('DOMContentLoaded', () => {
             const el = document.getElementById('siteVersion');
             if (el) el.textContent = `Studio 14 · v${VERSAO_INDEX}`;
@@ -1566,6 +1575,40 @@
             } catch (e) { /* loja é opcional: se falhar, o site segue normal */ }
         }
         document.addEventListener('DOMContentLoaded', carregarLoja);
+
+        // Modo teste: o servidor diz se o flag do painel está ligado e quais testes existem.
+        async function carregarConfigSite() {
+            const bloco = document.getElementById('blocoTestePagamento');
+            try {
+                const r = await (await fetch(`${WEBAPP_URL}?action=configSite`)).json();
+                if (!r.ok || !r.modoTeste || !r.servicosTeste.length) { bloco.classList.add('hidden'); return; }
+                const box = document.getElementById('testeBotoes');
+                box.innerHTML = '';
+                r.servicosTeste.forEach(s => {
+                    const b = document.createElement('button');
+                    b.className = 'px-5 py-2.5 rounded-full border-2 border-amber-500 text-amber-800 text-xs font-bold uppercase tracking-wider hover:bg-amber-500 hover:text-white transition-all';
+                    b.textContent = `${s.nome} — ${s.metodo === 'pix' ? 'Pix' : 'Cartão'}`;
+                    b.addEventListener('click', () => openBookingModal(s.nome, s.valor));
+                    box.appendChild(b);
+                });
+                bloco.classList.remove('hidden');
+            } catch (e) { bloco.classList.add('hidden'); }
+        }
+        document.addEventListener('DOMContentLoaded', carregarConfigSite);
+
+        // Pagamento do sinal de um agendamento de teste (reaproveita o checkout do Mercado Pago)
+        let testeAtual = null; // { agendamentoId, metodo, valor, nome }
+        function abrirCheckoutTeste(r, nome, email, cpf) {
+            testeAtual = { agendamentoId: r.id, metodo: r.metodoTeste, valor: valorAtual, nome: servicoAtual };
+            compradorAtual = { nome, cpf: String(cpf).replace(/\D/g, ''), email };
+            document.getElementById('checkoutResumoItens').innerHTML = `<div class="flex justify-between"><span>Sinal de teste — ${servicoAtual.replace(/[<>&]/g, '')}</span><span>${formatBRL(valorAtual)}</span></div>`;
+            document.getElementById('checkoutResumoTotal').textContent = formatBRL(valorAtual);
+            document.getElementById('checkoutStepDados').classList.add('hidden');
+            document.getElementById('checkoutStepConfirmacao').classList.add('hidden');
+            document.getElementById('checkoutStepPagamento').classList.remove('hidden');
+            document.getElementById('checkoutModal').classList.remove('hidden');
+            montarPaymentBrick();
+        }
         let servicoAtual = '';
         let valorAtual = 0;
         let dataAtual = '';
@@ -1812,6 +1855,12 @@
 
                 if (resultado.ok) {
                     idAgendamentoAtual = resultado.id;
+                    if (resultado.teste) {
+                        fecharAgendamentoModal();
+                        document.getElementById('agendaViewerModal').classList.add('hidden');
+                        abrirCheckoutTeste(resultado, nome, email, cpf);
+                        return;
+                    }
                     document.getElementById('agendamentoStepDados').classList.add('hidden');
 
                     if (resultado.sinalNecessario > 0) {
@@ -1915,7 +1964,7 @@
         const MP_CONFIG = {
             // Só a Public Key fica aqui. O pagamento é finalizado no Apps Script
             // (WEBAPP_URL), que guarda a Access Token nas Propriedades do script.
-            PUBLIC_KEY: 'APP_USR-c2bc9377-5b75-40d5-b64c-db149551b1be'
+            PUBLIC_KEY: 'COLE_AQUI_SUA_PUBLIC_KEY_MERCADO_PAGO'
         };
 
         const mp = (MP_CONFIG.PUBLIC_KEY.indexOf('COLE_AQUI') === -1)
@@ -2088,6 +2137,7 @@
                 alert('Seu carrinho está vazio.');
                 return;
             }
+            testeAtual = null;
             renderResumoPedido();
             document.getElementById('checkoutStepDados').classList.remove('hidden');
             document.getElementById('checkoutStepPagamento').classList.add('hidden');
@@ -2173,7 +2223,7 @@
                 return;
             }
 
-            const total = cartTotal(getCart());
+            const total = testeAtual ? testeAtual.valor : cartTotal(getCart());
 
             if (paymentBrickController) {
                 paymentBrickController.unmount();
@@ -2186,11 +2236,15 @@
                     payer: { email: compradorAtual.email }
                 },
                 customization: {
-                    paymentMethods: {
-                        creditCard: 'all',
-                        ticket: 'all',       // Boleto
-                        bankTransfer: 'all'  // Pix
-                    }
+                    paymentMethods: testeAtual
+                        ? (testeAtual.metodo === 'pix'
+                            ? { bankTransfer: 'all' }                          // teste Pix: só Pix
+                            : { creditCard: 'all', maxInstallments: 1 })       // teste cartão: só cartão, à vista
+                        : {
+                            creditCard: 'all',
+                            ticket: 'all',       // Boleto
+                            bankTransfer: 'all'  // Pix
+                        }
                 },
                 callbacks: {
                     onReady: () => {},
@@ -2203,17 +2257,14 @@
                         // recalculado no servidor, pelo catálogo (nunca confiamos no do navegador).
                         return new Promise((resolve, reject) => {
                             const cart = getCart();
+                            const corpo = testeAtual
+                                ? { action: 'processarPagamento', apiKey: APP_API_KEY, formData: formData, agendamentoId: testeAtual.agendamentoId }
+                                : { action: 'processarPagamento', apiKey: APP_API_KEY, formData: formData, comprador: compradorAtual,
+                                    itens: cart.map(i => ({ id: i.id })), totalExibido: cartTotal(cart) };
                             fetch(WEBAPP_URL, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                                body: JSON.stringify({
-                                    action: 'processarPagamento',
-                                    apiKey: APP_API_KEY,
-                                    formData: formData,
-                                    comprador: compradorAtual,
-                                    itens: cart.map(i => ({ id: i.id })),
-                                    totalExibido: cartTotal(cart)
-                                })
+                                body: JSON.stringify(corpo)
                             })
                                 .then(resp => resp.json())
                                 .then(resultado => {
@@ -2248,8 +2299,12 @@
             pararPollingPedido();
             estiloConfirmacao('ok');
             document.getElementById('confirmacaoTitulo').textContent = 'Pagamento aprovado!';
-            document.getElementById('confirmacaoTexto').textContent = 'Enviamos o acesso para o seu e-mail. Se não encontrar, olhe a caixa de spam.';
             document.getElementById('confirmacaoExtra').innerHTML = '';
+            if (testeAtual) {
+                document.getElementById('confirmacaoTexto').textContent = 'Teste concluído: o pagamento foi aprovado e o agendamento de teste foi confirmado.';
+                return;
+            }
+            document.getElementById('confirmacaoTexto').textContent = 'Enviamos o acesso para o seu e-mail. Se não encontrar, olhe a caixa de spam.';
             clearCart();
         }
 
