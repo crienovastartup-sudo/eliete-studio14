@@ -37,8 +37,8 @@ tailwind.config = { theme: { extend: {
   // A versão do index.html precisa ser copiada daqui (VERSAO_INDEX
   // dentro do próprio index.html) sempre que você atualizar os dois juntos.
   // ============================================================
-  const VERSAO_ADMIN = '1.5.0 · 10/11/2026';
-  const VERSAO_INDEX_PUBLICO = '1.5.0 · 10/11/2026';
+  const VERSAO_ADMIN = '1.6.0 · 12/11/2026';
+  const VERSAO_INDEX_PUBLICO = '1.6.0 · 12/11/2026';
 
   async function mostrarVersoes() {
     const el = document.getElementById('versoesInfo');
@@ -190,6 +190,16 @@ tailwind.config = { theme: { extend: {
     <!-- Serviços -->
     <div class="tab-content hidden" id="tab-servicos">
       <h2 class="font-serif text-xl font-bold mb-3">Serviços</h2>
+      <div class="admin-only hidden mb-4 bg-amber-50 rounded-2xl border border-amber-300 p-4">
+        <label class="flex items-start gap-3 cursor-pointer">
+          <input type="checkbox" id="chkModoTeste" onchange="alternarModoTeste(this)" class="mt-1 w-5 h-5">
+          <span>
+            <span class="font-bold text-sm block">Modo teste de pagamento</span>
+            <span class="text-xs text-charcoal/70 block">Marcado: o site mostra os agendamentos de teste (<b>Pix R$ 0,01</b> e <b>Cartão de crédito R$ 0,50</b>) para você testar o Mercado Pago. Desmarcado: as opções somem do site e o servidor recusa qualquer teste.</span>
+            <span id="msgModoTeste" class="text-xs font-bold block mt-1"></span>
+          </span>
+        </label>
+      </div>
       <div class="grid md:grid-cols-3 gap-2 mb-4 bg-white rounded-2xl border border-nude-200 p-4">
         <input id="novoServicoNome" placeholder="Nome do serviço" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
         <input id="novoServicoCategoria" placeholder="Categoria" class="text-sm border border-nude-300 rounded-lg px-3 py-2">
@@ -683,7 +693,21 @@ async function carregarRetorno(){
 // ============================================================
 // Serviços
 // ============================================================
+async function carregarModoTeste(){
+  const chk = document.getElementById('chkModoTeste');
+  if (!chk || (!SESSAO || SESSAO.papel !== 'Admin')) return;
+  try { const r = await apiGet('statusModoTeste'); if (r.ok) chk.checked = !!r.ativo; } catch (e) { /* sem acesso */ }
+}
+async function alternarModoTeste(chk){
+  const msg = document.getElementById('msgModoTeste');
+  chk.disabled = true; msg.textContent = 'Salvando...';
+  const r = await apiPost('definirModoTeste', { ativo: chk.checked });
+  chk.disabled = false;
+  if (r.ok) { chk.checked = !!r.ativo; msg.textContent = r.mensagem; msg.className = 'text-xs font-bold block mt-1 text-green-700'; }
+  else { chk.checked = !chk.checked; msg.textContent = r.erro || 'Não foi possível salvar.'; msg.className = 'text-xs font-bold block mt-1 text-red-600'; }
+}
 async function carregarServicos(){
+  carregarModoTeste();
   const r = await fetch(`${WEBAPP_URL}?action=listarServicos`).then(x=>x.json());
   const el = document.getElementById('listaServicos');
   if (!r.ok) { el.innerHTML = `<p class="p-3 text-warn text-sm">${r.erro}</p>`; return; }
